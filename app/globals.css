@@ -448,6 +448,14 @@ h2 span {
   touch-action: none;
   color: #713f12;
   border-radius: 2px;
+  user-select: none;
+}
+
+.sticky-secondary {
+  width: 210px;
+  z-index: 6;
+  border-radius: 3px;
+  box-shadow: 6px 14px 28px rgba(3, 105, 161, 0.15);
 }
 
 .sticky .mono {
@@ -758,6 +766,7 @@ h2 span {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
   gap: 36px;
+  perspective: 1200px;
 }
 
 .project-card {
@@ -769,12 +778,12 @@ h2 span {
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-subtle);
-  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  transition: box-shadow 0.25s, border-color 0.25s;
   cursor: pointer;
+  transform-style: preserve-3d;
 }
 
 .project-card:hover {
-  transform: translateY(-6px);
   box-shadow: var(--shadow-float);
   border-color: var(--blue);
 }
