@@ -458,7 +458,9 @@ export default function Home() {
         >
           {(!webgl || reduce || compact) && (
             <div className="fallback-badge">
-              <div>VK. // 3D MILESTONE CUBE</div>
+              <div className="brand" style={{ fontSize: '18px', letterSpacing: '-1px' }}>
+                vk<span>.</span> <small style={{ fontSize: '10px', color: 'var(--muted)', marginLeft: '8px', fontFamily: 'monospace' }}>// 3D MILESTONE CUBE</small>
+              </div>
               <strong>3D</strong>
               <h3>Venkatesh K</h3>
               <p>SOFTWARE ENGINEER · TECHNICAL TRAINER</p>
@@ -612,7 +614,8 @@ export default function Home() {
                 {i === 0 ? (
                   <div className="codeskill-art">
                     <div className="window-top">
-                      <i /><i /><i />
+                      <div className="window-dots"><i /><i /><i /></div>
+                      <span className="brand window-brand">vk<span>.</span></span>
                       <span>codeskill / judge-cluster</span>
                       <b>● RUNNING</b>
                     </div>
@@ -631,7 +634,8 @@ export default function Home() {
                 ) : (
                   <div className="syncdeck-art">
                     <div className="window-top">
-                      <i /><i /><i />
+                      <div className="window-dots"><i /><i /><i /></div>
+                      <span className="brand window-brand">vk<span>.</span></span>
                       <span>syncdeck / session-live</span>
                       <b>● LIVE WEBRTC</b>
                     </div>

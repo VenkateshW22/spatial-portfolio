@@ -117,11 +117,13 @@ export default function LoadingScreen({ onComplete, reduceMotion = false }: Load
           />
         </div>
 
-        {/* Quiet Minimalist Typography */}
-        <div className="minimal-loader-meta mono">
-          <span className="minimal-loader-name">venkatesh.k</span>
+        {/* Quiet Minimalist Typography with Unified Brand Logo */}
+        <div className="minimal-loader-meta">
+          <span className="brand minimal-loader-brand" aria-label="Venkatesh K">
+            vk<span>.</span>
+          </span>
           <span className="minimal-loader-sep">/</span>
-          <span className="minimal-loader-pct">{Math.floor(progress).toString().padStart(2, '0')}%</span>
+          <span className="minimal-loader-pct mono">{Math.floor(progress).toString().padStart(2, '0')}%</span>
         </div>
       </div>
     </motion.aside>

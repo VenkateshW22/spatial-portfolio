@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ReactFlow,
   Background,
@@ -9,14 +9,544 @@ import {
   useEdgesState,
   MarkerType,
   Position,
+  Handle,
   Node,
   Edge,
+  useReactFlow,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Play, ShieldAlert, Cpu, RefreshCw, CheckCircle2, Zap } from 'lucide-react';
 
 interface SandboxProps {
   project: string;
+}
+
+interface CustomNodeData {
+  step: string;
+  title: string;
+  subtitle: string;
+  badge?: string;
+  isDark?: boolean;
+  isActive?: boolean;
+  isScaleNode?: boolean;
+  hasAlert?: boolean;
+}
+
+// Custom Architecture Node Component for Pixel-Perfect Layout
+function ArchNode({ data }: { data: CustomNodeData }) {
+  const isDark = !!data.isDark;
+  const isActive = !!data.isActive;
+  const isScaleNode = !!data.isScaleNode;
+  const hasAlert = !!data.hasAlert;
+
+  const bg = hasAlert
+    ? (isDark ? '#450a0a' : '#fef2f2')
+    : isScaleNode
+    ? (isDark ? '#064e3b' : '#f0fdf4')
+    : isActive
+    ? (isDark ? '#1e293b' : '#ffffff')
+    : (isDark ? '#131c26' : '#ffffff');
+
+  const border = hasAlert
+    ? '#ef4444'
+    : isActive
+    ? '#254be8'
+    : isScaleNode
+    ? '#22c55e'
+    : (isDark ? '#2e4156' : '#cbd5e1');
+
+  const textColor = isDark ? '#f8fafc' : '#0f172a';
+  const subColor = isDark ? '#94a3b8' : '#64748b';
+
+  return (
+    <div
+      className={`arch-node ${isActive ? 'active' : ''} ${isScaleNode ? 'scale-node' : ''} ${hasAlert ? 'alert-node' : ''}`}
+      style={{
+        width: 180,
+        minHeight: 74,
+        background: bg,
+        border: `2px solid ${border}`,
+        borderRadius: '10px',
+        padding: '10px 12px',
+        boxShadow: hasAlert
+          ? '0 0 0 4px rgba(239, 68, 68, 0.25)'
+          : isActive
+          ? '0 0 0 4px rgba(37, 75, 232, 0.22), 0 8px 20px rgba(37, 75, 232, 0.12)'
+          : '0 2px 8px rgba(0, 0, 0, 0.04)',
+        transition: 'all 0.22s ease-in-out',
+        position: 'relative',
+        boxSizing: 'border-box',
+      }}
+    >
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{
+          width: 8,
+          height: 8,
+          background: isActive ? '#254be8' : (isDark ? '#475569' : '#94a3b8'),
+          border: `2px solid ${isDark ? '#0b1015' : '#ffffff'}`,
+          left: -5,
+        }}
+      />
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '5px',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '9px',
+            fontWeight: 800,
+            color: hasAlert ? '#ef4444' : isActive ? '#254be8' : (isScaleNode ? '#16a34a' : '#64748b'),
+            letterSpacing: '0.8px',
+          }}
+        >
+          {data.step}
+        </span>
+        {data.badge && (
+          <span
+            style={{
+              fontSize: '8px',
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              padding: '2px 5px',
+              borderRadius: '4px',
+              background: isScaleNode ? '#dcfce7' : (isDark ? '#1e293b' : '#f1f5f9'),
+              color: isScaleNode ? '#15803d' : (isDark ? '#94a3b8' : '#475569'),
+              border: `1px solid ${isScaleNode ? '#86efac' : (isDark ? '#334155' : '#e2e8f0')}`,
+            }}
+          >
+            {data.badge}
+          </span>
+        )}
+      </div>
+
+      <div
+        style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: textColor,
+          lineHeight: 1.3,
+          marginBottom: '3px',
+          letterSpacing: '-0.2px',
+        }}
+      >
+        {data.title}
+      </div>
+
+      <div
+        style={{
+          fontSize: '9.5px',
+          color: subColor,
+          lineHeight: 1.35,
+          fontWeight: 500,
+        }}
+      >
+        {data.subtitle}
+      </div>
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{
+          width: 8,
+          height: 8,
+          background: isActive ? '#254be8' : (isDark ? '#475569' : '#94a3b8'),
+          border: `2px solid ${isDark ? '#0b1015' : '#ffffff'}`,
+          right: -5,
+        }}
+      />
+    </div>
+  );
+}
+
+const nodeTypes = {
+  archNode: ArchNode,
+};
+
+function FlowCanvas({
+  isCodeSkill,
+  isDark,
+  step,
+  isScaled,
+  antiCheatAlert,
+  onFitComplete,
+}: {
+  isCodeSkill: boolean;
+  isDark: boolean;
+  step: number;
+  isScaled: boolean;
+  antiCheatAlert: boolean;
+  onFitComplete?: () => void;
+}) {
+  const { fitView } = useReactFlow();
+
+  // Grid coordinates:
+  // Column 1: x = 30
+  // Column 2: x = 245
+  // Column 3: x = 460
+  // Column 4: x = 675
+  // Column 5: x = 890
+  // Row center: y = 140
+  // Row top: y = 65
+  // Row bottom: y = 215
+
+  const nodes: Node[] = useMemo(() => {
+    if (isCodeSkill) {
+      const baseNodes: Node[] = [
+        {
+          id: 'client',
+          type: 'archNode',
+          position: { x: 30, y: 140 },
+          data: {
+            step: 'STAGE 01',
+            title: 'Next.js 16 WebApp',
+            subtitle: 'Candidate IDE & Integrity',
+            badge: 'INGEST',
+            isDark,
+            isActive: step === 0,
+            hasAlert: antiCheatAlert,
+          },
+        },
+        {
+          id: 'gateway',
+          type: 'archNode',
+          position: { x: 245, y: 140 },
+          data: {
+            step: 'STAGE 02',
+            title: 'NestJS Gateway',
+            subtitle: 'Socket.IO + Auth Guards',
+            badge: 'ROUTER',
+            isDark,
+            isActive: step === 1,
+          },
+        },
+        {
+          id: 'queue',
+          type: 'archNode',
+          position: { x: 460, y: 140 },
+          data: {
+            step: 'STAGE 03',
+            title: 'BullMQ on Redis',
+            subtitle: 'Priority Job Queue',
+            badge: 'BUFFER',
+            isDark,
+            isActive: step === 2,
+          },
+        },
+        {
+          id: 'sandbox',
+          type: 'archNode',
+          position: { x: 675, y: isScaled ? 65 : 140 },
+          data: {
+            step: isScaled ? 'STAGE 04a' : 'STAGE 04',
+            title: isScaled ? 'Worker Replica #1' : 'Docker Sandboxes',
+            subtitle: 'Isolated Piston Runner',
+            badge: 'PISTON',
+            isDark,
+            isActive: step === 3,
+          },
+        },
+        {
+          id: 'shards',
+          type: 'archNode',
+          position: { x: 890, y: 140 },
+          data: {
+            step: 'STAGE 05',
+            title: 'PostgreSQL Shards',
+            subtitle: '128 Hash Partitions',
+            badge: '128 DB',
+            isDark,
+            isActive: step === 4,
+          },
+        },
+      ];
+
+      if (isScaled) {
+        baseNodes.push({
+          id: 'replica-worker',
+          type: 'archNode',
+          position: { x: 675, y: 215 },
+          data: {
+            step: 'STAGE 04b',
+            title: 'Worker Replica #2',
+            subtitle: 'Auto-Scaled Container',
+            badge: 'AWS ASG',
+            isDark,
+            isActive: step === 3,
+            isScaleNode: true,
+          },
+        });
+      }
+
+      return baseNodes;
+    } else {
+      // SyncDeck Architecture
+      const baseNodes: Node[] = [
+        {
+          id: 'host',
+          type: 'archNode',
+          position: { x: 30, y: 140 },
+          data: {
+            step: 'STAGE 01',
+            title: 'Instructor Host',
+            subtitle: 'React 19 + Whiteboard',
+            badge: 'PRESENTER',
+            isDark,
+            isActive: step === 0,
+          },
+        },
+        {
+          id: 'gateway',
+          type: 'archNode',
+          position: { x: 245, y: 140 },
+          data: {
+            step: 'STAGE 02',
+            title: 'Express + Socket.IO',
+            subtitle: 'Distributed State Sync',
+            badge: 'GATEWAY',
+            isDark,
+            isActive: step === 1,
+          },
+        },
+        {
+          id: 'redis',
+          type: 'archNode',
+          position: { x: 460, y: 65 },
+          data: {
+            step: 'STAGE 03a',
+            title: 'Redis Pub/Sub',
+            subtitle: 'Replay Buffer & Log',
+            badge: 'REPLAY',
+            isDark,
+            isActive: step === 2 || step === 3,
+          },
+        },
+        {
+          id: 'webrtc',
+          type: 'archNode',
+          position: { x: 460, y: 215 },
+          data: {
+            step: 'STAGE 03b',
+            title: 'WebRTC Media Mesh',
+            subtitle: 'Low-latency Pipeline',
+            badge: 'WEBRTC',
+            isDark,
+            isActive: step === 2 || step === 3,
+          },
+        },
+        {
+          id: 'relay',
+          type: 'archNode',
+          position: { x: 675, y: isScaled ? 65 : 140 },
+          data: {
+            step: isScaled ? 'STAGE 04a' : 'STAGE 04',
+            title: isScaled ? 'Primary SFU Node' : 'Edge Dist. Gateway',
+            subtitle: 'State & A/V Multiplexer',
+            badge: 'EDGE',
+            isDark,
+            isActive: step === 3,
+          },
+        },
+        {
+          id: 'students',
+          type: 'archNode',
+          position: { x: 890, y: 140 },
+          data: {
+            step: 'STAGE 05',
+            title: 'Student Cohorts',
+            subtitle: '3,000+ Synced Peers',
+            badge: '<45ms',
+            isDark,
+            isActive: step === 4,
+          },
+        },
+      ];
+
+      if (isScaled) {
+        baseNodes.push({
+          id: 'replica-worker',
+          type: 'archNode',
+          position: { x: 675, y: 215 },
+          data: {
+            step: 'STAGE 04b',
+            title: 'Edge TURN/Relay',
+            subtitle: 'Auto-Scaled Mesh Node',
+            badge: 'TURN SFU',
+            isDark,
+            isActive: step === 3,
+            isScaleNode: true,
+          },
+        });
+      }
+
+      return baseNodes;
+    }
+  }, [isCodeSkill, isDark, step, isScaled, antiCheatAlert]);
+
+  const edges: Edge[] = useMemo(() => {
+    const activeColor = '#254be8';
+    const inactiveColor = isDark ? '#334155' : '#cbd5e1';
+    const scaleColor = '#22c55e';
+
+    if (isCodeSkill) {
+      const eList: Edge[] = [
+        {
+          id: 'e1',
+          source: 'client',
+          target: 'gateway',
+          animated: step >= 1,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 1 ? activeColor : inactiveColor },
+          style: { stroke: step >= 1 ? activeColor : inactiveColor, strokeWidth: step === 1 ? 3 : 2 },
+        },
+        {
+          id: 'e2',
+          source: 'gateway',
+          target: 'queue',
+          animated: step >= 2,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 2 ? activeColor : inactiveColor },
+          style: { stroke: step >= 2 ? activeColor : inactiveColor, strokeWidth: step === 2 ? 3 : 2 },
+        },
+        {
+          id: 'e3',
+          source: 'queue',
+          target: 'sandbox',
+          animated: step >= 3,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 3 ? activeColor : inactiveColor },
+          style: { stroke: step >= 3 ? activeColor : inactiveColor, strokeWidth: step === 3 ? 3 : 2 },
+        },
+        {
+          id: 'e4',
+          source: 'sandbox',
+          target: 'shards',
+          animated: step >= 4,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 4 ? activeColor : inactiveColor },
+          style: { stroke: step >= 4 ? activeColor : inactiveColor, strokeWidth: step === 4 ? 3 : 2 },
+        },
+      ];
+
+      if (isScaled) {
+        eList.push(
+          {
+            id: 'e-scale-1',
+            source: 'queue',
+            target: 'replica-worker',
+            animated: step >= 3,
+            markerEnd: { type: MarkerType.ArrowClosed, color: step >= 3 ? scaleColor : '#86efac' },
+            style: { stroke: step >= 3 ? scaleColor : '#86efac', strokeWidth: step === 3 ? 3 : 2 },
+          },
+          {
+            id: 'e-scale-2',
+            source: 'replica-worker',
+            target: 'shards',
+            animated: step >= 4,
+            markerEnd: { type: MarkerType.ArrowClosed, color: step >= 4 ? scaleColor : '#86efac' },
+            style: { stroke: step >= 4 ? scaleColor : '#86efac', strokeWidth: step === 4 ? 3 : 2 },
+          }
+        );
+      }
+
+      return eList;
+    } else {
+      // SyncDeck Edges
+      const eList: Edge[] = [
+        {
+          id: 'e1',
+          source: 'host',
+          target: 'gateway',
+          animated: step >= 1,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 1 ? activeColor : inactiveColor },
+          style: { stroke: step >= 1 ? activeColor : inactiveColor, strokeWidth: step === 1 ? 3 : 2 },
+        },
+        {
+          id: 'e2',
+          source: 'gateway',
+          target: 'redis',
+          animated: step >= 2,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 2 ? activeColor : inactiveColor },
+          style: { stroke: step >= 2 ? activeColor : inactiveColor, strokeWidth: step === 2 ? 3 : 2 },
+        },
+        {
+          id: 'e3',
+          source: 'gateway',
+          target: 'webrtc',
+          animated: step >= 2,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 2 ? activeColor : inactiveColor },
+          style: { stroke: step >= 2 ? activeColor : inactiveColor, strokeWidth: step === 2 ? 3 : 2 },
+        },
+        {
+          id: 'e4',
+          source: 'redis',
+          target: 'relay',
+          animated: step >= 3,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 3 ? activeColor : inactiveColor },
+          style: { stroke: step >= 3 ? activeColor : inactiveColor, strokeWidth: step === 3 ? 3 : 2 },
+        },
+        {
+          id: 'e5',
+          source: 'webrtc',
+          target: isScaled ? 'replica-worker' : 'relay',
+          animated: step >= 3,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 3 ? (isScaled ? scaleColor : activeColor) : inactiveColor },
+          style: { stroke: step >= 3 ? (isScaled ? scaleColor : activeColor) : inactiveColor, strokeWidth: step === 3 ? 3 : 2 },
+        },
+        {
+          id: 'e6',
+          source: 'relay',
+          target: 'students',
+          animated: step >= 4,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 4 ? activeColor : inactiveColor },
+          style: { stroke: step >= 4 ? activeColor : inactiveColor, strokeWidth: step === 4 ? 3 : 2 },
+        },
+      ];
+
+      if (isScaled) {
+        eList.push({
+          id: 'e-scale-relay',
+          source: 'replica-worker',
+          target: 'students',
+          animated: step >= 4,
+          markerEnd: { type: MarkerType.ArrowClosed, color: step >= 4 ? scaleColor : '#86efac' },
+          style: { stroke: step >= 4 ? scaleColor : '#86efac', strokeWidth: step === 4 ? 3 : 2 },
+        });
+      }
+
+      return eList;
+    }
+  }, [isCodeSkill, isDark, step, isScaled]);
+
+  // Initial and reactive fitView to ensure clean positioning
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fitView({ padding: 0.16, duration: 400 });
+      onFitComplete?.();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [fitView, isCodeSkill, isScaled, onFitComplete]);
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      nodeTypes={nodeTypes}
+      fitView
+      fitViewOptions={{ padding: 0.16 }}
+      minZoom={0.45}
+      maxZoom={1.2}
+      colorMode={isDark ? 'dark' : 'light'}
+      proOptions={{ hideAttribution: true }}
+    >
+      <Background color={isDark ? '#233245' : '#cbd5e1'} gap={24} size={1.2} />
+      <Controls showInteractive={false} />
+    </ReactFlow>
+  );
 }
 
 export default function Sandbox({ project }: SandboxProps) {
@@ -38,10 +568,6 @@ export default function Sandbox({ project }: SandboxProps) {
     return () => observer.disconnect();
   }, []);
 
-  const nodeBg = isDark ? '#1e293b' : '#ffffff';
-  const nodeText = isDark ? '#f8fafc' : '#0f172a';
-  const nodeBorder = isDark ? '#475569' : '#94a3b8';
-
   // State management
   const [step, setStep] = useState<number>(-1);
   const [completedCount, setCompletedCount] = useState<number>(0);
@@ -50,137 +576,28 @@ export default function Sandbox({ project }: SandboxProps) {
   const [activeLang, setActiveLang] = useState<'Java' | 'Python' | 'C++'>('Java');
   const [auditLog, setAuditLog] = useState<string[]>([]);
 
-  // Node architecture definitions
-  const initialNodes: Node[] = useMemo(() => {
-    if (isCodeSkill) {
-      return [
-        {
-          id: 'client',
-          position: { x: 20, y: 110 },
-          data: { label: '01 · Next.js 16 WebApp\n(Candidate IDE + Anti-Cheat)' },
-          style: { background: nodeBg, border: '2px solid #254be8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'gateway',
-          position: { x: 240, y: 110 },
-          data: { label: '02 · NestJS Gateway\n(Socket.IO + Auth Guards)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'queue',
-          position: { x: 460, y: 30 },
-          data: { label: '03 · BullMQ on Redis\n(Async Job Queue)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'sandbox',
-          position: { x: 460, y: 190 },
-          data: { label: '04 · Docker Sandboxes\n(Isolated Piston Runner)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'shards',
-          position: { x: 690, y: 110 },
-          data: { label: '05 · PostgreSQL 128 Shards\n(Hash Partition Buckets)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 185 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-      ];
-    } else {
-      // SyncDeck Architecture
-      return [
-        {
-          id: 'host',
-          position: { x: 20, y: 110 },
-          data: { label: '01 · Instructor Host\n(React 19 + Whiteboard)' },
-          style: { background: nodeBg, border: '2px solid #254be8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'gateway',
-          position: { x: 240, y: 110 },
-          data: { label: '02 · Express + Socket.IO\n(Distributed State Sync)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'redis',
-          position: { x: 460, y: 30 },
-          data: { label: '03 · Redis Pub/Sub Cluster\n(Replay Log & Delta Buffer)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 180 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'webrtc',
-          position: { x: 460, y: 190 },
-          data: { label: '04 · WebRTC Screen Mesh\n(Low-latency Media Pipeline)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 180 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-        {
-          id: 'students',
-          position: { x: 690, y: 110 },
-          data: { label: '05 · Student Cohorts\n(3,000+ Synchronized Peers)' },
-          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 185 },
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        },
-      ];
-    }
-  }, [isCodeSkill, nodeBg, nodeText, nodeBorder]);
-
-  const initialEdges: Edge[] = useMemo(() => {
-    const edgeColor = '#254be8';
-    if (isCodeSkill) {
-      return [
-        { id: 'e1', source: 'client', target: 'gateway', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e2', source: 'gateway', target: 'queue', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e3', source: 'queue', target: 'sandbox', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e4', source: 'sandbox', target: 'shards', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-      ];
-    } else {
-      return [
-        { id: 'e1', source: 'host', target: 'gateway', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e2', source: 'gateway', target: 'redis', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e3', source: 'gateway', target: 'webrtc', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e4', source: 'redis', target: 'students', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-        { id: 'e5', source: 'webrtc', target: 'students', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: edgeColor, strokeWidth: 2 } },
-      ];
-    }
-  }, [isCodeSkill]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
   // Simulation steps explanation
-  const codeSkillSteps = [
-    `[Client] Candidate submits ${activeLang} solution. Anti-cheat client integrity signed.`,
-    `[Gateway] NestJS authenticates JWT & pushes payload to BullMQ queue.`,
-    `[BullMQ] Redis assigns job #SUB-${1000 + completedCount}. Enforcing concurrency limit (max 16).`,
-    `[Docker/Piston] Spun isolated sandbox with 256MB RAM / 2.0s CPU bounds. Verified 15/15 test cases.`,
-    `[Database] Hash(userId) % 128 -> Partition Shard #${(completedCount * 17 + 23) % 128} committed successfully!`,
-  ];
+  const codeSkillSteps = useMemo(
+    () => [
+      `[STAGE 01 · Client] Candidate submits ${activeLang} solution. Anti-cheat integrity hash signed.`,
+      `[STAGE 02 · Gateway] NestJS authenticates JWT & pushes payload to BullMQ queue.`,
+      `[STAGE 03 · BullMQ] Redis assigns job #SUB-${1000 + completedCount}. Concurrency bounded (max 16/worker).`,
+      `[STAGE 04 · Docker/Piston] Spun isolated sandbox with 256MB RAM / 2.0s CPU bounds. Verified 15/15 test cases.`,
+      `[STAGE 05 · Database] Hash(userId) % 128 -> Partition Shard #${(completedCount * 17 + 23) % 128} committed successfully!`,
+    ],
+    [activeLang, completedCount]
+  );
 
-  const syncDeckSteps = [
-    `[Presenter] Slide #4 and collaborative canvas strokes emitted by host.`,
-    `[Socket.IO Gateway] Broadcast request parsed, assigned Sequence #SEQ-${500 + completedCount}.`,
-    `[Redis Cluster] Pub/Sub fanout executed; delta frame cached in replay buffer for reconnects.`,
-    `[WebRTC Engine] Screen stream synchronized via P2P mesh and selective forwarding.`,
-    `[Student Peers] 1,000+ concurrent students rendered whiteboard updates with <45ms latency!`,
-  ];
+  const syncDeckSteps = useMemo(
+    () => [
+      `[STAGE 01 · Presenter] Slide #4 and collaborative canvas strokes emitted by host.`,
+      `[STAGE 02 · Gateway] Socket.IO broadcast request parsed, assigned Sequence #SEQ-${500 + completedCount}.`,
+      `[STAGE 03 · Pub/Sub & WebRTC] Dual fanout executed: delta frames to Redis buffer, screen mesh stream active.`,
+      `[STAGE 04 · Edge Distribution] Media routed via edge relay nodes; delta buffer cached for instant reconnection.`,
+      `[STAGE 05 · Student Cohorts] 3,000+ concurrent students rendered whiteboard updates with <45ms latency!`,
+    ],
+    [completedCount]
+  );
 
   const activeSteps = isCodeSkill ? codeSkillSteps : syncDeckSteps;
 
@@ -197,78 +614,22 @@ export default function Sandbox({ project }: SandboxProps) {
       }
     }, 850);
     return () => clearTimeout(timer);
-  }, [step, activeSteps, completedCount]);
-
-  // Sync edge and node animation with active step
-  useEffect(() => {
-    setEdges((es) =>
-      es.map((e, idx) => ({
-        ...e,
-        animated: step >= 0 && idx <= step,
-        style: {
-          stroke: step === idx ? '#254be8' : '#94a3b8',
-          strokeWidth: step === idx ? 3 : 2,
-        },
-      }))
-    );
-
-    setNodes((ns) =>
-      ns.map((n, idx) => {
-        const isActive = step === idx;
-        return {
-          ...n,
-          style: {
-            ...n.style,
-            borderColor: isActive ? '#254be8' : '#94a3b8',
-            boxShadow: isActive ? '0 0 0 6px rgba(37, 75, 232, 0.18)' : 'none',
-            transform: isActive ? 'scale(1.03)' : 'scale(1)',
-            transition: 'all 0.25s ease',
-          },
-        };
-      })
-    );
-  }, [step, setNodes, setEdges]);
+  }, [step, activeSteps]);
 
   // Handle traffic scaling
   const handleScaleToggle = () => {
     setIsScaled((prev) => {
       const next = !prev;
-      if (next) {
-        // Add replica worker node
-        setNodes((ns) => [
-          ...ns,
-          {
-            id: 'replica-worker',
-            position: { x: 460, y: isCodeSkill ? 280 : 280 },
-            data: { label: isCodeSkill ? '04b · Worker Replica #2\n(Auto-Scaled ASG Container)' : '04b · Edge TURN/Relay\n(Auto-Scaled WebRTC)' },
-            style: { background: '#f0fdf4', border: '2px solid #22c55e', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#166534', width: 185 },
-            sourcePosition: Position.Right,
-            targetPosition: Position.Left,
-          },
-        ]);
-        setEdges((es) => [
-          ...es,
-          {
-            id: 'scale-edge-1',
-            source: isCodeSkill ? 'queue' : 'gateway',
-            target: 'replica-worker',
-            animated: true,
-            markerEnd: { type: MarkerType.ArrowClosed },
-            style: { stroke: '#22c55e', strokeWidth: 2 },
-          },
-          {
-            id: 'scale-edge-2',
-            source: 'replica-worker',
-            target: isCodeSkill ? 'shards' : 'students',
-            animated: true,
-            markerEnd: { type: MarkerType.ArrowClosed },
-            style: { stroke: '#22c55e', strokeWidth: 2 },
-          },
-        ]);
-      } else {
-        setNodes((ns) => ns.filter((n) => n.id !== 'replica-worker'));
-        setEdges((es) => es.filter((e) => !e.id.startsWith('scale-edge')));
-      }
+      setAuditLog((prevLogs) => [
+        next
+          ? (isCodeSkill
+              ? `🚀 [AUTO-SCALING TRIGGERED] Concurrency spike > 1,000 active contestants. Spun Worker Replica #2 in AWS ASG container cluster!`
+              : `🚀 [AUTO-SCALING TRIGGERED] Student attendance > 1,000. Deployed dynamic Edge TURN/SFU relay node to distribute WebRTC mesh load!`)
+          : (isCodeSkill
+              ? `📉 [SCALE DOWN] Test traffic stabilized. Worker Replica #2 terminated to optimize cloud infrastructure costs.`
+              : `📉 [SCALE DOWN] Room capacity normalized. TURN relays returned to standby state.`),
+        ...prevLogs.slice(0, 4),
+      ]);
       return next;
     });
   };
@@ -287,9 +648,12 @@ export default function Sandbox({ project }: SandboxProps) {
 
   return (
     <div className="sandbox-wrapper">
-      {/* Top Controls Toolbar */}
+      {/* Top Controls Toolbar with Unified VK Logo */}
       <div className="sandbox-toolbar">
         <div className="toolbar-status">
+          <span className="brand sandbox-brand" aria-label="VK Brand">
+            vk<span>.</span>
+          </span>
           <span className="live-badge">
             <span className="live-dot" /> LIVE ARCHITECTURE SIMULATOR
           </span>
@@ -349,7 +713,7 @@ export default function Sandbox({ project }: SandboxProps) {
               className="action-btn secondary"
               onClick={() => {
                 setAuditLog((prev) => [
-                  `⚡ [RECONNECTION RECOVERY] Wi-Fi reconnection detected. Requesting missed frames seq #SEQ-498 to #SEQ-500 from Redis buffer. State restored seamlessly!`,
+                  `⚡ [RECONNECTION RECOVERY] Wi-Fi drop detected. Requesting missed frames seq #SEQ-498 to #SEQ-500 from Redis buffer. State restored seamlessly!`,
                   ...prev.slice(0, 4),
                 ]);
               }}
@@ -368,22 +732,17 @@ export default function Sandbox({ project }: SandboxProps) {
         </div>
       </div>
 
-      {/* Visual React Flow Canvas */}
+      {/* Visual React Flow Canvas Wrapped in Provider */}
       <div className="flow-canvas-container">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          fitView
-          minZoom={0.4}
-          maxZoom={1.2}
-          colorMode={isDark ? 'dark' : 'light'}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background color={isDark ? '#334155' : '#cbd5e1'} gap={24} size={1.2} />
-          <Controls showInteractive={false} />
-        </ReactFlow>
+        <ReactFlowProvider>
+          <FlowCanvas
+            isCodeSkill={isCodeSkill}
+            isDark={isDark}
+            step={step}
+            isScaled={isScaled}
+            antiCheatAlert={antiCheatAlert}
+          />
+        </ReactFlowProvider>
 
         {antiCheatAlert && (
           <div className="anti-cheat-overlay">

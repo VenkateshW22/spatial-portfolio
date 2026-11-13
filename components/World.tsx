@@ -60,13 +60,19 @@ function createFaceTexture({
   ctx.fillStyle = badgeColor;
   ctx.fillRect(36, 36, 696, 16);
 
-  // Top Tag & Corner Step
+  // Top Tag & Corner Step with Unified Brand Logo
+  ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+  ctx.font = '900 24px -apple-system, sans-serif';
+  ctx.fillText('VK', 64, 96);
+  ctx.fillStyle = '#254be8';
+  ctx.fillText('.', 98, 96);
+
   ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-  ctx.font = 'bold 22px monospace';
-  ctx.fillText(badge, 64, 96);
+  ctx.font = 'bold 20px monospace';
+  ctx.fillText(`// ${badge}`, 116, 96);
 
   ctx.fillStyle = badgeColor;
-  ctx.font = 'bold 24px monospace';
+  ctx.font = 'bold 22px monospace';
   ctx.textAlign = 'right';
   ctx.fillText(cornerTag, 704, 96);
   ctx.textAlign = 'left';

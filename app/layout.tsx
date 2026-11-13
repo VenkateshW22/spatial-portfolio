@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     'Resilience4j',
     'Java Full Stack',
   ],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
