@@ -490,7 +490,7 @@ export default function Home() {
           <span className="sticky-foot">✳ &nbsp; always a work in progress</span>
         </motion.div>
 
-        {/* Tactile Draggable Note 2 (Architecture Rule) */}
+        {/* Tactile Draggable Note 2 (Quote on Change & Growth) */}
         <motion.div
           drag={!reduce}
           dragConstraints={desk}
@@ -502,14 +502,14 @@ export default function Home() {
           onPointerDown={() => click()}
         >
           <span className="tape" style={{ background: 'rgba(255,255,255,0.7)' }} />
-          <span className="mono">SYSTEM RULE / 002</span>
-          <p style={{ fontSize: '15px', fontFamily: 'monospace', lineHeight: 1.4, margin: '10px 0' }}>
-            Decouple early.<br />
-            Partition (128 shards).<br />
-            Circuit Breaker fallback.
+          <span className="mono">QUOTE / 002</span>
+          <p style={{ fontSize: '18px', lineHeight: 1.35, margin: '12px 0 10px' }}>
+            Change is the only constant.<br />
+            Adapt swiftly.<br />
+            <em>Keep evolving.</em>
           </p>
           <span className="sticky-foot" style={{ color: '#0284c7' }}>
-            ⚡ Oracle RDS: -20% infra cost
+            ⚡ Heraclitus · embrace the shift
           </span>
         </motion.div>
 
