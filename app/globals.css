@@ -461,8 +461,8 @@ h2 span {
   z-index: 5;
   background: #fef08a;
   width: 220px;
-  right: 38%;
-  bottom: 75px;
+  right: 36%;
+  bottom: 85px;
   padding: 22px 20px 18px;
   box-shadow: 4px 12px 24px rgba(0, 0, 0, 0.12);
   cursor: grab;
@@ -474,6 +474,8 @@ h2 span {
 
 .sticky-secondary {
   width: 210px;
+  right: 18%;
+  bottom: 45px;
   z-index: 6;
   border-radius: 3px;
   box-shadow: 6px 14px 28px rgba(3, 105, 161, 0.15);
@@ -2180,6 +2182,11 @@ h2 span {
 /* ==========================================================================
    RESPONSIVE DESIGN SYSTEM (Desktop, Tablet, Mobile, Small Phone)
    ========================================================================== */
+
+@media (max-width: 1280px) {
+  .sticky { right: 30%; bottom: 90px; }
+  .sticky-secondary { right: 10%; bottom: 40px; }
+}
 
 @media (max-width: 1024px) {
   .hero h1 { font-size: 68px; }
