@@ -1048,9 +1048,6 @@ export default function Home() {
 
       {/* LAYER 3: Global HUD Controls Pill */}
       <div className="global-controls">
-        <span className="status-dot" />
-        <span className="mono">HYBRID SPATIAL</span>
-        <span className="control-separator" />
         <button
           type="button"
           aria-label={sound ? 'Mute interaction sounds' : 'Enable interaction sounds'}
@@ -1058,6 +1055,7 @@ export default function Home() {
         >
           {sound ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
+        <span className="control-separator" />
         <button
           type="button"
           aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
