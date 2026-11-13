@@ -49,6 +49,14 @@ const ExplainerLab = dynamic(() => import('../components/ExplainerLab'), {
     </p>
   ),
 });
+const IndiaMap = dynamic(() => import('../components/IndiaMap'), {
+  ssr: false,
+  loading: () => (
+    <p className="mono" style={{ padding: '40px', textAlign: 'center' }}>
+      Loading geographic map of India…
+    </p>
+  ),
+});
 
 // Journey Data from Resume
 const journey = [
@@ -61,8 +69,8 @@ const journey = [
     flightNo: 'AMRITA-CS-01',
     gate: 'MYS-BLR',
     body: 'Earned BCA (2020) and MCA (2022). Built a deep algorithmic foundation in data structures, relational database engines, and authored research on eye-movement-based assistive communication systems.',
-    x: 220,
-    y: 340,
+    x: 440,
+    y: 1420,
   },
   {
     city: 'Bengaluru',
@@ -73,8 +81,8 @@ const journey = [
     flightNo: 'ORCL-PROD-24',
     gate: 'BLR-DEL',
     body: 'Developed resilient Spring Boot microservices, high-throughput REST APIs, and RBAC security. Key technical owner for AWS RDS database cluster migrations, achieving a 20% reduction in infrastructure costs and deploying Resilience4j circuit breakers.',
-    x: 285,
-    y: 310,
+    x: 485,
+    y: 1380,
   },
   {
     city: 'Noida & Hybrid',
@@ -85,8 +93,8 @@ const journey = [
     flightNo: 'VTS-EDTECH-25',
     gate: 'DEL-PB',
     body: 'Delivered 250+ hours of intensive Java Full Stack bootcamps to 3,000+ engineering students at NIET Noida, Chitkara University, and Lovely Professional University (LPU). Awarded the Best Teacher Award.',
-    x: 275,
-    y: 120,
+    x: 468,
+    y: 535,
   },
   {
     city: 'Punjab',
@@ -97,8 +105,8 @@ const journey = [
     flightNo: 'CU-TITAN-26',
     gate: 'PB-ALL',
     body: 'Delivered 200+ hours of instructor-led engineering training to 1,000+ students. Architected curricula in Spring Boot, PostgreSQL, Microservices, and live systems debugging. Honored with the Teaching Titan Award.',
-    x: 235,
-    y: 85,
+    x: 412,
+    y: 405,
   },
 ];
 
@@ -779,42 +787,15 @@ export default function Home() {
         <div className="journey-layout">
           <div className="map">
             <div className="map-grid" />
-            <svg viewBox="0 0 560 430" role="group" aria-label="Career journey map across India">
-              <path
-                className="india-shape"
-                d="M204 35l35 14 13 28 32 11 18 31 62 23 53-13 40-28 33 13-15 28-32 8-25 27-36 2-31 35-44 38-26 51-18 49-26 46-15-14-15-65-29-33-11-46-33-29-31-29 27-21-8-29 24-20 2-30 27-10z"
-              />
-              <path
-                className="map-route"
-                d="M220 340 Q380 320 285 310 Q320 200 275 120 Q240 100 235 85"
-              />
-              {journey.map((j, i) => (
-                <g
-                  key={j.city}
-                  className={`map-pin ${i === city ? 'active' : ''}`}
-                  onClick={() => {
-                    setCity(i);
-                    click();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setCity(i);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`View ${j.city} milestone`}
-                >
-                  <circle cx={j.x} cy={j.y} r={i === city ? 16 : 10} className="pin-ring" />
-                  <circle cx={j.x} cy={j.y} r={5} />
-                  <text x={j.x + 20} y={j.y + 5}>
-                    {j.city}
-                  </text>
-                </g>
-              ))}
-            </svg>
-            <span className="map-caption mono">INDIA / CAREER MAP · CLICK ANY PIN TO INSPECT</span>
+            <IndiaMap
+              activeCity={city}
+              onSelectCity={(idx) => {
+                setCity(idx);
+                click();
+              }}
+              milestones={journey}
+            />
+            <span className="map-caption mono">GEOGRAPHIC MAP OF INDIA · CLICK ANY PIN TO INSPECT</span>
           </div>
 
           {/* James Chugh Style Boarding Pass */}

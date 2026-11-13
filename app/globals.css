@@ -623,7 +623,7 @@ h2 span {
 }
 
 .map {
-  height: 440px;
+  height: 540px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -633,6 +633,7 @@ h2 span {
   justify-content: center;
   overflow: hidden;
   box-shadow: var(--shadow-subtle);
+  padding: 20px;
 }
 
 .map-grid {
@@ -2131,7 +2132,7 @@ h2 span {
   .badge-zone { width: 44%; right: 0; }
   .sticky { right: 28%; }
   .journey-layout { grid-template-columns: 1fr; gap: 32px; }
-  .map { height: 380px; }
+  .map { height: 460px; }
   .queue-lanes { grid-template-columns: 1fr; }
   .case-details { grid-template-columns: 1fr; }
 }
