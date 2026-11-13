@@ -18,7 +18,7 @@ export default function IndiaMap({ activeCity, onSelectCity, milestones }: India
   return (
     <div className="india-map-container" style={{ width: "100%", height: "100%", position: "relative" }}>
       <svg
-        viewBox="0 0 1486 1734"
+        viewBox="-220 -20 1880 1790"
         className="india-svg"
         role="group"
         aria-label="Official Geographical Map of India showing career journey milestones"
@@ -1230,22 +1230,22 @@ export default function IndiaMap({ activeCity, onSelectCity, milestones }: India
           className="map-route"
           fill="none"
           stroke="var(--blue)"
-          strokeWidth="10"
-          strokeDasharray="24 16"
-          opacity="0.85"
+          strokeWidth="16"
+          strokeDasharray="30 20"
+          opacity="0.9"
         />
 
-        {/* Defined & Large Interactive Milestone Markers */}
+        {/* Defined, Extra-Large Interactive Milestone Markers */}
         {milestones.map((j, i) => {
           const isActive = i === activeCity;
-          // Dedicated non-overlapping callout layouts for each milestone
+          // Dedicated non-overlapping callout layouts for each milestone (generous spacing & large sizes)
           const callouts = [
-            { dx: -370, dy: -45, w: 340, h: 96, sub: "Amrita University (BCA/MCA)", align: "right" },
-            { dx: 70, dy: -55, w: 330, h: 96, sub: "Oracle · Microservices", align: "left" },
-            { dx: 70, dy: -45, w: 360, h: 96, sub: "VTS · NIET · Chitkara · LPU", align: "left" },
-            { dx: -400, dy: -45, w: 370, h: 96, sub: "Chandigarh University · Titan", align: "right" },
+            { dx: -560, dy: -80, w: 510, h: 154, sub: "Amrita University (BCA/MCA)", align: "right" },
+            { dx: 125, dy: -90, w: 490, h: 154, sub: "Oracle · Microservices", align: "left" },
+            { dx: 125, dy: -80, w: 530, h: 154, sub: "VTS · NIET · Chitkara · LPU", align: "left" },
+            { dx: -580, dy: -80, w: 530, h: 154, sub: "Chandigarh University · Titan", align: "right" },
           ];
-          const cfg = callouts[i] || { dx: 60, dy: -40, w: 320, h: 96, sub: "", align: "left" };
+          const cfg = callouts[i] || { dx: 100, dy: -60, w: 490, h: 154, sub: "", align: "left" };
           const badgeX = j.x + cfg.dx;
           const badgeY = j.y + cfg.dy;
 
@@ -1272,101 +1272,101 @@ export default function IndiaMap({ activeCity, onSelectCity, milestones }: India
                 x2={cfg.align === "left" ? badgeX : badgeX + cfg.w}
                 y2={badgeY + cfg.h / 2}
                 stroke={isActive ? "var(--blue)" : "var(--line)"}
-                strokeWidth={isActive ? "5" : "3"}
-                strokeDasharray={isActive ? "none" : "8 6"}
-                opacity={isActive ? 1 : 0.6}
+                strokeWidth={isActive ? "10" : "6"}
+                strokeDasharray={isActive ? "none" : "12 8"}
+                opacity={isActive ? 1 : 0.7}
               />
 
               {/* Pin Ground Shadow */}
               <ellipse
                 cx={j.x}
-                cy={j.y + 14}
-                rx={isActive ? 38 : 26}
-                ry={isActive ? 14 : 10}
-                fill="rgba(0,0,0,0.25)"
+                cy={j.y + 24}
+                rx={isActive ? 70 : 52}
+                ry={isActive ? 24 : 18}
+                fill="rgba(0,0,0,0.3)"
               />
 
               {/* Pulsing Beacon Radar Rings */}
               <circle
                 cx={j.x}
                 cy={j.y}
-                r={isActive ? 88 : 55}
+                r={isActive ? 145 : 92}
                 className="pin-ring"
                 stroke="var(--blue)"
-                strokeWidth={isActive ? "6" : "3"}
+                strokeWidth={isActive ? "10" : "6"}
                 fill="none"
-                opacity={isActive ? 0.75 : 0.3}
+                opacity={isActive ? 0.85 : 0.4}
               />
               {isActive && (
                 <circle
                   cx={j.x}
                   cy={j.y}
-                  r="125"
+                  r="215"
                   className="pin-ring"
                   stroke="var(--blue)"
-                  strokeWidth="3"
+                  strokeWidth="5"
                   fill="none"
-                  opacity="0.35"
+                  opacity="0.45"
                 />
               )}
 
-              {/* Prominent Large Marker Head */}
+              {/* Prominent Giant Marker Head */}
               <circle
                 cx={j.x}
                 cy={j.y}
-                r={isActive ? 48 : 36}
+                r={isActive ? 82 : 62}
                 fill={isActive ? "var(--blue)" : "var(--card)"}
                 stroke={isActive ? "#ffffff" : "var(--blue)"}
-                strokeWidth={isActive ? "7" : "5"}
+                strokeWidth={isActive ? "12" : "9"}
                 filter="url(#pinGlow)"
               />
 
               {/* Milestone Step Number (01, 02, 03, 04) */}
               <text
                 x={j.x}
-                y={j.y + 11}
+                y={j.y + (isActive ? 20 : 16)}
                 textAnchor="middle"
                 fontFamily="monospace"
-                fontSize={isActive ? "32" : "26"}
+                fontSize={isActive ? "54" : "42"}
                 fontWeight="900"
                 fill={isActive ? "#ffffff" : "var(--blue)"}
               >
                 0{i + 1}
               </text>
 
-              {/* Defined & Large Floating Callout Badge */}
+              {/* Defined, Extra-Large Floating Callout Badge */}
               <g transform={`translate(${badgeX}, ${badgeY})`}>
-                {/* Badge Backdrop Card with Shadow */}
+                {/* Badge Backdrop Card with Elevation Shadow */}
                 <rect
                   x="0"
                   y="0"
                   width={cfg.w}
                   height={cfg.h}
-                  rx="16"
+                  rx="26"
                   fill="var(--card)"
                   stroke={isActive ? "var(--blue)" : "var(--line)"}
-                  strokeWidth={isActive ? "4" : "2"}
-                  opacity={isActive ? 0.98 : 0.92}
+                  strokeWidth={isActive ? "6" : "3.5"}
+                  opacity={isActive ? 0.99 : 0.94}
                   filter="url(#pinGlow)"
                 />
 
                 {/* Top Status Accent Bar */}
                 <rect
-                  x="16"
-                  y="12"
-                  width="36"
-                  height="6"
-                  rx="3"
+                  x="24"
+                  y="20"
+                  width="60"
+                  height="10"
+                  rx="5"
                   fill={isActive ? "var(--blue)" : "var(--muted)"}
                 />
 
-                {/* Primary City Title (Large & Bold) */}
+                {/* Primary City Title (Giant & Bold) */}
                 <text
-                  x="18"
-                  y="48"
+                  x="26"
+                  y="78"
                   fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-                  fontSize="32"
-                  fontWeight="800"
+                  fontSize="52"
+                  fontWeight="900"
                   fill={isActive ? "var(--blue)" : "var(--ink)"}
                   letterSpacing="0.4"
                 >
@@ -1375,11 +1375,11 @@ export default function IndiaMap({ activeCity, onSelectCity, milestones }: India
 
                 {/* Secondary Subtitle / Role Tag */}
                 <text
-                  x="18"
-                  y="78"
+                  x="26"
+                  y="124"
                   fontFamily="monospace"
-                  fontSize="20"
-                  fontWeight="600"
+                  fontSize="30"
+                  fontWeight="700"
                   fill="var(--muted)"
                 >
                   {cfg.sub}

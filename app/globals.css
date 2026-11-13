@@ -623,7 +623,7 @@ h2 span {
 }
 
 .map {
-  height: 540px;
+  height: 650px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -633,7 +633,7 @@ h2 span {
   justify-content: center;
   overflow: hidden;
   box-shadow: var(--shadow-subtle);
-  padding: 20px;
+  padding: 12px;
 }
 
 .map-grid {
@@ -644,8 +644,8 @@ h2 span {
 }
 
 .map svg {
-  width: 90%;
-  height: 90%;
+  width: 98%;
+  height: 98%;
   position: relative;
   z-index: 2;
 }
@@ -2121,7 +2121,7 @@ h2 span {
   .badge-zone { width: 44%; right: 0; }
   .sticky { right: 28%; }
   .journey-layout { grid-template-columns: 1fr; gap: 32px; }
-  .map { height: 460px; }
+  .map { height: 520px; }
   .queue-lanes { grid-template-columns: 1fr; }
   .case-details { grid-template-columns: 1fr; }
 }
