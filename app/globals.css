@@ -672,34 +672,23 @@ h2 span {
 .map-pin {
   cursor: pointer;
   outline: none;
+  transition: opacity 0.2s, filter 0.2s;
 }
 
-.map-pin circle {
-  fill: var(--blue);
-  transition: transform 0.2s;
+.map-pin:hover {
+  filter: drop-shadow(0 6px 16px rgba(37, 75, 232, 0.45));
 }
 
 .pin-ring {
-  fill: none;
-  stroke: var(--blue);
-  stroke-width: 2;
-  opacity: 0.4;
-  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  transform-origin: center;
+  animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 @keyframes ping {
-  75%, 100% { transform: scale(1.6); opacity: 0; }
-}
-
-.map-pin text {
-  font-family: monospace;
-  font-size: 12px;
-  font-weight: bold;
-  fill: var(--ink);
-}
-
-.map-pin.active circle {
-  fill: var(--blue);
+  75%, 100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
 }
 
 .map-caption {

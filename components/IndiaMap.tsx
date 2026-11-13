@@ -1230,13 +1230,25 @@ export default function IndiaMap({ activeCity, onSelectCity, milestones }: India
           className="map-route"
           fill="none"
           stroke="var(--blue)"
-          strokeWidth="6"
-          strokeDasharray="14 10"
+          strokeWidth="10"
+          strokeDasharray="24 16"
+          opacity="0.85"
         />
 
-        {/* Interactive Milestone Pins */}
+        {/* Defined & Large Interactive Milestone Markers */}
         {milestones.map((j, i) => {
           const isActive = i === activeCity;
+          // Dedicated non-overlapping callout layouts for each milestone
+          const callouts = [
+            { dx: -370, dy: -45, w: 340, h: 96, sub: "Amrita University (BCA/MCA)", align: "right" },
+            { dx: 70, dy: -55, w: 330, h: 96, sub: "Oracle · Microservices", align: "left" },
+            { dx: 70, dy: -45, w: 360, h: 96, sub: "VTS · NIET · Chitkara · LPU", align: "left" },
+            { dx: -400, dy: -45, w: 370, h: 96, sub: "Chandigarh University · Titan", align: "right" },
+          ];
+          const cfg = callouts[i] || { dx: 60, dy: -40, w: 320, h: 96, sub: "", align: "left" };
+          const badgeX = j.x + cfg.dx;
+          const badgeY = j.y + cfg.dy;
+
           return (
             <g
               key={j.city}
@@ -1253,53 +1265,124 @@ export default function IndiaMap({ activeCity, onSelectCity, milestones }: India
               aria-label={`View ${j.city} milestone`}
               style={{ cursor: "pointer", outline: "none" }}
             >
-              {/* Pulsing Outer Ring */}
-              <circle
-                cx={j.x}
-                cy={j.y}
-                r={isActive ? 44 : 26}
-                className="pin-ring"
-                stroke="var(--blue)"
-                strokeWidth="4"
-                fill="none"
-                opacity={isActive ? 0.8 : 0.4}
+              {/* Leader Connecting Line from Pin Head to Badge Box */}
+              <line
+                x1={j.x}
+                y1={j.y}
+                x2={cfg.align === "left" ? badgeX : badgeX + cfg.w}
+                y2={badgeY + cfg.h / 2}
+                stroke={isActive ? "var(--blue)" : "var(--line)"}
+                strokeWidth={isActive ? "5" : "3"}
+                strokeDasharray={isActive ? "none" : "8 6"}
+                opacity={isActive ? 1 : 0.6}
               />
 
-              {/* Core Glow Dot */}
+              {/* Pin Ground Shadow */}
+              <ellipse
+                cx={j.x}
+                cy={j.y + 14}
+                rx={isActive ? 38 : 26}
+                ry={isActive ? 14 : 10}
+                fill="rgba(0,0,0,0.25)"
+              />
+
+              {/* Pulsing Beacon Radar Rings */}
               <circle
                 cx={j.x}
                 cy={j.y}
-                r={isActive ? 18 : 12}
-                fill={isActive ? "var(--blue)" : "var(--ink)"}
+                r={isActive ? 88 : 55}
+                className="pin-ring"
+                stroke="var(--blue)"
+                strokeWidth={isActive ? "6" : "3"}
+                fill="none"
+                opacity={isActive ? 0.75 : 0.3}
+              />
+              {isActive && (
+                <circle
+                  cx={j.x}
+                  cy={j.y}
+                  r="125"
+                  className="pin-ring"
+                  stroke="var(--blue)"
+                  strokeWidth="3"
+                  fill="none"
+                  opacity="0.35"
+                />
+              )}
+
+              {/* Prominent Large Marker Head */}
+              <circle
+                cx={j.x}
+                cy={j.y}
+                r={isActive ? 48 : 36}
+                fill={isActive ? "var(--blue)" : "var(--card)"}
+                stroke={isActive ? "#ffffff" : "var(--blue)"}
+                strokeWidth={isActive ? "7" : "5"}
                 filter="url(#pinGlow)"
               />
 
-              {/* Inner Center Highlight */}
-              <circle cx={j.x} cy={j.y} r="6" fill="#ffffff" />
+              {/* Milestone Step Number (01, 02, 03, 04) */}
+              <text
+                x={j.x}
+                y={j.y + 11}
+                textAnchor="middle"
+                fontFamily="monospace"
+                fontSize={isActive ? "32" : "26"}
+                fontWeight="900"
+                fill={isActive ? "#ffffff" : "var(--blue)"}
+              >
+                0{i + 1}
+              </text>
 
-              {/* City Name Label with Backdrop */}
-              <g transform={`translate(${j.x + 28}, ${j.y + 10})`}>
+              {/* Defined & Large Floating Callout Badge */}
+              <g transform={`translate(${badgeX}, ${badgeY})`}>
+                {/* Badge Backdrop Card with Shadow */}
                 <rect
-                  x="-6"
-                  y="-26"
-                  width={j.city.length * 18 + 24}
-                  height="36"
-                  rx="6"
+                  x="0"
+                  y="0"
+                  width={cfg.w}
+                  height={cfg.h}
+                  rx="16"
                   fill="var(--card)"
                   stroke={isActive ? "var(--blue)" : "var(--line)"}
-                  strokeWidth="2"
-                  opacity="0.92"
+                  strokeWidth={isActive ? "4" : "2"}
+                  opacity={isActive ? 0.98 : 0.92}
+                  filter="url(#pinGlow)"
                 />
+
+                {/* Top Status Accent Bar */}
+                <rect
+                  x="16"
+                  y="12"
+                  width="36"
+                  height="6"
+                  rx="3"
+                  fill={isActive ? "var(--blue)" : "var(--muted)"}
+                />
+
+                {/* Primary City Title (Large & Bold) */}
                 <text
-                  x="6"
-                  y="-3"
-                  fontFamily="-apple-system, sans-serif"
-                  fontSize="22"
-                  fontWeight="bold"
+                  x="18"
+                  y="48"
+                  fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                  fontSize="32"
+                  fontWeight="800"
                   fill={isActive ? "var(--blue)" : "var(--ink)"}
-                  letterSpacing="0.5"
+                  letterSpacing="0.4"
                 >
                   {j.city}
+                </text>
+
+                {/* Secondary Subtitle / Role Tag */}
+                <text
+                  x="18"
+                  y="78"
+                  fontFamily="monospace"
+                  fontSize="20"
+                  fontWeight="600"
+                  fill="var(--muted)"
+                >
+                  {cfg.sub}
                 </text>
               </g>
             </g>
