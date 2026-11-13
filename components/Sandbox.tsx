@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
   Controls,
-  useNodesState,
-  useEdgesState,
   MarkerType,
   Position,
   Handle,
@@ -16,7 +14,7 @@ import {
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Play, ShieldAlert, Cpu, RefreshCw, CheckCircle2, Zap } from 'lucide-react';
+import { Play, ShieldAlert, Cpu, RefreshCw, Zap } from 'lucide-react';
 
 interface SandboxProps {
   project: string;
@@ -31,6 +29,8 @@ interface CustomNodeData {
   isActive?: boolean;
   isScaleNode?: boolean;
   hasAlert?: boolean;
+  isMobile?: boolean;
+  width?: number;
 }
 
 // Custom Architecture Node Component for Pixel-Perfect Layout
@@ -39,6 +39,7 @@ function ArchNode({ data }: { data: CustomNodeData }) {
   const isActive = !!data.isActive;
   const isScaleNode = !!data.isScaleNode;
   const hasAlert = !!data.hasAlert;
+  const isMobile = !!data.isMobile;
 
   const bg = hasAlert
     ? (isDark ? '#450a0a' : '#fef2f2')
@@ -58,17 +59,18 @@ function ArchNode({ data }: { data: CustomNodeData }) {
 
   const textColor = isDark ? '#f8fafc' : '#0f172a';
   const subColor = isDark ? '#94a3b8' : '#64748b';
+  const nodeWidth = data.width || (isMobile ? 170 : 180);
 
   return (
     <div
       className={`arch-node ${isActive ? 'active' : ''} ${isScaleNode ? 'scale-node' : ''} ${hasAlert ? 'alert-node' : ''}`}
       style={{
-        width: 180,
-        minHeight: 74,
+        width: nodeWidth,
+        minHeight: 72,
         background: bg,
         border: `2px solid ${border}`,
         borderRadius: '10px',
-        padding: '10px 12px',
+        padding: '9px 11px',
         boxShadow: hasAlert
           ? '0 0 0 4px rgba(239, 68, 68, 0.25)'
           : isActive
@@ -81,13 +83,15 @@ function ArchNode({ data }: { data: CustomNodeData }) {
     >
       <Handle
         type="target"
-        position={Position.Left}
+        position={isMobile ? Position.Top : Position.Left}
         style={{
           width: 8,
           height: 8,
           background: isActive ? '#254be8' : (isDark ? '#475569' : '#94a3b8'),
           border: `2px solid ${isDark ? '#0b1015' : '#ffffff'}`,
-          left: -5,
+          ...(isMobile
+            ? { top: -5, left: '50%', transform: 'translateX(-50%)' }
+            : { left: -5, top: '50%', transform: 'translateY(-50%)' }),
         }}
       />
 
@@ -96,7 +100,7 @@ function ArchNode({ data }: { data: CustomNodeData }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '5px',
+          marginBottom: '4px',
         }}
       >
         <span
@@ -154,13 +158,15 @@ function ArchNode({ data }: { data: CustomNodeData }) {
 
       <Handle
         type="source"
-        position={Position.Right}
+        position={isMobile ? Position.Bottom : Position.Right}
         style={{
           width: 8,
           height: 8,
           background: isActive ? '#254be8' : (isDark ? '#475569' : '#94a3b8'),
           border: `2px solid ${isDark ? '#0b1015' : '#ffffff'}`,
-          right: -5,
+          ...(isMobile
+            ? { bottom: -5, left: '50%', transform: 'translateX(-50%)' }
+            : { right: -5, top: '50%', transform: 'translateY(-50%)' }),
         }}
       />
     </div>
@@ -174,222 +180,459 @@ const nodeTypes = {
 function FlowCanvas({
   isCodeSkill,
   isDark,
+  isMobile,
   step,
   isScaled,
   antiCheatAlert,
-  onFitComplete,
 }: {
   isCodeSkill: boolean;
   isDark: boolean;
+  isMobile: boolean;
   step: number;
   isScaled: boolean;
   antiCheatAlert: boolean;
-  onFitComplete?: () => void;
 }) {
   const { fitView } = useReactFlow();
 
-  // Grid coordinates:
-  // Column 1: x = 30
-  // Column 2: x = 245
-  // Column 3: x = 460
-  // Column 4: x = 675
-  // Column 5: x = 890
-  // Row center: y = 140
-  // Row top: y = 65
-  // Row bottom: y = 215
-
   const nodes: Node[] = useMemo(() => {
-    if (isCodeSkill) {
-      const baseNodes: Node[] = [
-        {
-          id: 'client',
-          type: 'archNode',
-          position: { x: 30, y: 140 },
-          data: {
-            step: 'STAGE 01',
-            title: 'Next.js 16 WebApp',
-            subtitle: 'Candidate IDE & Integrity',
-            badge: 'INGEST',
-            isDark,
-            isActive: step === 0,
-            hasAlert: antiCheatAlert,
+    if (isMobile) {
+      // Mobile Top-to-Bottom Flow Layout
+      if (isCodeSkill) {
+        const baseNodes: Node[] = [
+          {
+            id: 'client',
+            type: 'archNode',
+            position: { x: 80, y: 15 },
+            data: {
+              step: 'STAGE 01',
+              title: 'Next.js 16 WebApp',
+              subtitle: 'Candidate IDE & Integrity',
+              badge: 'INGEST',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 0,
+              hasAlert: antiCheatAlert,
+            },
           },
-        },
-        {
-          id: 'gateway',
-          type: 'archNode',
-          position: { x: 245, y: 140 },
-          data: {
-            step: 'STAGE 02',
-            title: 'NestJS Gateway',
-            subtitle: 'Socket.IO + Auth Guards',
-            badge: 'ROUTER',
-            isDark,
-            isActive: step === 1,
+          {
+            id: 'gateway',
+            type: 'archNode',
+            position: { x: 80, y: 115 },
+            data: {
+              step: 'STAGE 02',
+              title: 'NestJS Gateway',
+              subtitle: 'Socket.IO + Auth Guards',
+              badge: 'ROUTER',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 1,
+            },
           },
-        },
-        {
-          id: 'queue',
-          type: 'archNode',
-          position: { x: 460, y: 140 },
-          data: {
-            step: 'STAGE 03',
-            title: 'BullMQ on Redis',
-            subtitle: 'Priority Job Queue',
-            badge: 'BUFFER',
-            isDark,
-            isActive: step === 2,
+          {
+            id: 'queue',
+            type: 'archNode',
+            position: { x: 80, y: 215 },
+            data: {
+              step: 'STAGE 03',
+              title: 'BullMQ on Redis',
+              subtitle: 'Priority Job Queue',
+              badge: 'BUFFER',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 2,
+            },
           },
-        },
-        {
-          id: 'sandbox',
-          type: 'archNode',
-          position: { x: 675, y: isScaled ? 65 : 140 },
-          data: {
-            step: isScaled ? 'STAGE 04a' : 'STAGE 04',
-            title: isScaled ? 'Worker Replica #1' : 'Docker Sandboxes',
-            subtitle: 'Isolated Piston Runner',
-            badge: 'PISTON',
-            isDark,
-            isActive: step === 3,
+          {
+            id: 'sandbox',
+            type: 'archNode',
+            position: { x: isScaled ? -5 : 80, y: 315 },
+            data: {
+              step: isScaled ? 'STAGE 04a' : 'STAGE 04',
+              title: isScaled ? 'Worker Replica #1' : 'Docker Sandboxes',
+              subtitle: 'Isolated Piston Runner',
+              badge: 'PISTON',
+              isDark,
+              isMobile: true,
+              width: isScaled ? 160 : 170,
+              isActive: step === 3,
+            },
           },
-        },
-        {
-          id: 'shards',
-          type: 'archNode',
-          position: { x: 890, y: 140 },
-          data: {
-            step: 'STAGE 05',
-            title: 'PostgreSQL Shards',
-            subtitle: '128 Hash Partitions',
-            badge: '128 DB',
-            isDark,
-            isActive: step === 4,
+          {
+            id: 'shards',
+            type: 'archNode',
+            position: { x: 80, y: 415 },
+            data: {
+              step: 'STAGE 05',
+              title: 'PostgreSQL Shards',
+              subtitle: '128 Hash Partitions',
+              badge: '128 DB',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 4,
+            },
           },
-        },
-      ];
+        ];
 
-      if (isScaled) {
-        baseNodes.push({
-          id: 'replica-worker',
-          type: 'archNode',
-          position: { x: 675, y: 215 },
-          data: {
-            step: 'STAGE 04b',
-            title: 'Worker Replica #2',
-            subtitle: 'Auto-Scaled Container',
-            badge: 'AWS ASG',
-            isDark,
-            isActive: step === 3,
-            isScaleNode: true,
+        if (isScaled) {
+          baseNodes.push({
+            id: 'replica-worker',
+            type: 'archNode',
+            position: { x: 175, y: 315 },
+            data: {
+              step: 'STAGE 04b',
+              title: 'Worker Replica #2',
+              subtitle: 'Auto-Scaled Container',
+              badge: 'AWS ASG',
+              isDark,
+              isMobile: true,
+              width: 160,
+              isActive: step === 3,
+              isScaleNode: true,
+            },
+          });
+        }
+
+        return baseNodes;
+      } else {
+        // SyncDeck Mobile
+        const baseNodes: Node[] = [
+          {
+            id: 'host',
+            type: 'archNode',
+            position: { x: 80, y: 15 },
+            data: {
+              step: 'STAGE 01',
+              title: 'Instructor Host',
+              subtitle: 'React 19 + Whiteboard',
+              badge: 'PRESENTER',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 0,
+            },
           },
-        });
+          {
+            id: 'gateway',
+            type: 'archNode',
+            position: { x: 80, y: 115 },
+            data: {
+              step: 'STAGE 02',
+              title: 'Express + Socket.IO',
+              subtitle: 'Distributed State Sync',
+              badge: 'GATEWAY',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 1,
+            },
+          },
+          {
+            id: 'redis',
+            type: 'archNode',
+            position: { x: -5, y: 215 },
+            data: {
+              step: 'STAGE 03a',
+              title: 'Redis Pub/Sub',
+              subtitle: 'Replay Buffer & Log',
+              badge: 'REPLAY',
+              isDark,
+              isMobile: true,
+              width: 160,
+              isActive: step === 2 || step === 3,
+            },
+          },
+          {
+            id: 'webrtc',
+            type: 'archNode',
+            position: { x: 175, y: 215 },
+            data: {
+              step: 'STAGE 03b',
+              title: 'WebRTC Media Mesh',
+              subtitle: 'Low-latency Pipeline',
+              badge: 'WEBRTC',
+              isDark,
+              isMobile: true,
+              width: 160,
+              isActive: step === 2 || step === 3,
+            },
+          },
+          {
+            id: 'relay',
+            type: 'archNode',
+            position: { x: isScaled ? -5 : 80, y: 315 },
+            data: {
+              step: isScaled ? 'STAGE 04a' : 'STAGE 04',
+              title: isScaled ? 'Primary SFU Node' : 'Edge Dist. Gateway',
+              subtitle: 'State & A/V Multiplexer',
+              badge: 'EDGE',
+              isDark,
+              isMobile: true,
+              width: isScaled ? 160 : 170,
+              isActive: step === 3,
+            },
+          },
+          {
+            id: 'students',
+            type: 'archNode',
+            position: { x: 80, y: 415 },
+            data: {
+              step: 'STAGE 05',
+              title: 'Student Cohorts',
+              subtitle: '3,000+ Synced Peers',
+              badge: '<45ms',
+              isDark,
+              isMobile: true,
+              width: 170,
+              isActive: step === 4,
+            },
+          },
+        ];
+
+        if (isScaled) {
+          baseNodes.push({
+            id: 'replica-worker',
+            type: 'archNode',
+            position: { x: 175, y: 315 },
+            data: {
+              step: 'STAGE 04b',
+              title: 'Edge TURN/Relay',
+              subtitle: 'Auto-Scaled Mesh Node',
+              badge: 'TURN SFU',
+              isDark,
+              isMobile: true,
+              width: 160,
+              isActive: step === 3,
+              isScaleNode: true,
+            },
+          });
+        }
+
+        return baseNodes;
       }
-
-      return baseNodes;
     } else {
-      // SyncDeck Architecture
-      const baseNodes: Node[] = [
-        {
-          id: 'host',
-          type: 'archNode',
-          position: { x: 30, y: 140 },
-          data: {
-            step: 'STAGE 01',
-            title: 'Instructor Host',
-            subtitle: 'React 19 + Whiteboard',
-            badge: 'PRESENTER',
-            isDark,
-            isActive: step === 0,
+      // Desktop Horizontal 5-Column Grid
+      if (isCodeSkill) {
+        const baseNodes: Node[] = [
+          {
+            id: 'client',
+            type: 'archNode',
+            position: { x: 30, y: 140 },
+            data: {
+              step: 'STAGE 01',
+              title: 'Next.js 16 WebApp',
+              subtitle: 'Candidate IDE & Integrity',
+              badge: 'INGEST',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 0,
+              hasAlert: antiCheatAlert,
+            },
           },
-        },
-        {
-          id: 'gateway',
-          type: 'archNode',
-          position: { x: 245, y: 140 },
-          data: {
-            step: 'STAGE 02',
-            title: 'Express + Socket.IO',
-            subtitle: 'Distributed State Sync',
-            badge: 'GATEWAY',
-            isDark,
-            isActive: step === 1,
+          {
+            id: 'gateway',
+            type: 'archNode',
+            position: { x: 245, y: 140 },
+            data: {
+              step: 'STAGE 02',
+              title: 'NestJS Gateway',
+              subtitle: 'Socket.IO + Auth Guards',
+              badge: 'ROUTER',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 1,
+            },
           },
-        },
-        {
-          id: 'redis',
-          type: 'archNode',
-          position: { x: 460, y: 65 },
-          data: {
-            step: 'STAGE 03a',
-            title: 'Redis Pub/Sub',
-            subtitle: 'Replay Buffer & Log',
-            badge: 'REPLAY',
-            isDark,
-            isActive: step === 2 || step === 3,
+          {
+            id: 'queue',
+            type: 'archNode',
+            position: { x: 460, y: 140 },
+            data: {
+              step: 'STAGE 03',
+              title: 'BullMQ on Redis',
+              subtitle: 'Priority Job Queue',
+              badge: 'BUFFER',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 2,
+            },
           },
-        },
-        {
-          id: 'webrtc',
-          type: 'archNode',
-          position: { x: 460, y: 215 },
-          data: {
-            step: 'STAGE 03b',
-            title: 'WebRTC Media Mesh',
-            subtitle: 'Low-latency Pipeline',
-            badge: 'WEBRTC',
-            isDark,
-            isActive: step === 2 || step === 3,
+          {
+            id: 'sandbox',
+            type: 'archNode',
+            position: { x: 675, y: isScaled ? 65 : 140 },
+            data: {
+              step: isScaled ? 'STAGE 04a' : 'STAGE 04',
+              title: isScaled ? 'Worker Replica #1' : 'Docker Sandboxes',
+              subtitle: 'Isolated Piston Runner',
+              badge: 'PISTON',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 3,
+            },
           },
-        },
-        {
-          id: 'relay',
-          type: 'archNode',
-          position: { x: 675, y: isScaled ? 65 : 140 },
-          data: {
-            step: isScaled ? 'STAGE 04a' : 'STAGE 04',
-            title: isScaled ? 'Primary SFU Node' : 'Edge Dist. Gateway',
-            subtitle: 'State & A/V Multiplexer',
-            badge: 'EDGE',
-            isDark,
-            isActive: step === 3,
+          {
+            id: 'shards',
+            type: 'archNode',
+            position: { x: 890, y: 140 },
+            data: {
+              step: 'STAGE 05',
+              title: 'PostgreSQL Shards',
+              subtitle: '128 Hash Partitions',
+              badge: '128 DB',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 4,
+            },
           },
-        },
-        {
-          id: 'students',
-          type: 'archNode',
-          position: { x: 890, y: 140 },
-          data: {
-            step: 'STAGE 05',
-            title: 'Student Cohorts',
-            subtitle: '3,000+ Synced Peers',
-            badge: '<45ms',
-            isDark,
-            isActive: step === 4,
-          },
-        },
-      ];
+        ];
 
-      if (isScaled) {
-        baseNodes.push({
-          id: 'replica-worker',
-          type: 'archNode',
-          position: { x: 675, y: 215 },
-          data: {
-            step: 'STAGE 04b',
-            title: 'Edge TURN/Relay',
-            subtitle: 'Auto-Scaled Mesh Node',
-            badge: 'TURN SFU',
-            isDark,
-            isActive: step === 3,
-            isScaleNode: true,
+        if (isScaled) {
+          baseNodes.push({
+            id: 'replica-worker',
+            type: 'archNode',
+            position: { x: 675, y: 215 },
+            data: {
+              step: 'STAGE 04b',
+              title: 'Worker Replica #2',
+              subtitle: 'Auto-Scaled Container',
+              badge: 'AWS ASG',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 3,
+              isScaleNode: true,
+            },
+          });
+        }
+
+        return baseNodes;
+      } else {
+        // SyncDeck Desktop
+        const baseNodes: Node[] = [
+          {
+            id: 'host',
+            type: 'archNode',
+            position: { x: 30, y: 140 },
+            data: {
+              step: 'STAGE 01',
+              title: 'Instructor Host',
+              subtitle: 'React 19 + Whiteboard',
+              badge: 'PRESENTER',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 0,
+            },
           },
-        });
+          {
+            id: 'gateway',
+            type: 'archNode',
+            position: { x: 245, y: 140 },
+            data: {
+              step: 'STAGE 02',
+              title: 'Express + Socket.IO',
+              subtitle: 'Distributed State Sync',
+              badge: 'GATEWAY',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 1,
+            },
+          },
+          {
+            id: 'redis',
+            type: 'archNode',
+            position: { x: 460, y: 65 },
+            data: {
+              step: 'STAGE 03a',
+              title: 'Redis Pub/Sub',
+              subtitle: 'Replay Buffer & Log',
+              badge: 'REPLAY',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 2 || step === 3,
+            },
+          },
+          {
+            id: 'webrtc',
+            type: 'archNode',
+            position: { x: 460, y: 215 },
+            data: {
+              step: 'STAGE 03b',
+              title: 'WebRTC Media Mesh',
+              subtitle: 'Low-latency Pipeline',
+              badge: 'WEBRTC',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 2 || step === 3,
+            },
+          },
+          {
+            id: 'relay',
+            type: 'archNode',
+            position: { x: 675, y: isScaled ? 65 : 140 },
+            data: {
+              step: isScaled ? 'STAGE 04a' : 'STAGE 04',
+              title: isScaled ? 'Primary SFU Node' : 'Edge Dist. Gateway',
+              subtitle: 'State & A/V Multiplexer',
+              badge: 'EDGE',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 3,
+            },
+          },
+          {
+            id: 'students',
+            type: 'archNode',
+            position: { x: 890, y: 140 },
+            data: {
+              step: 'STAGE 05',
+              title: 'Student Cohorts',
+              subtitle: '3,000+ Synced Peers',
+              badge: '<45ms',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 4,
+            },
+          },
+        ];
+
+        if (isScaled) {
+          baseNodes.push({
+            id: 'replica-worker',
+            type: 'archNode',
+            position: { x: 675, y: 215 },
+            data: {
+              step: 'STAGE 04b',
+              title: 'Edge TURN/Relay',
+              subtitle: 'Auto-Scaled Mesh Node',
+              badge: 'TURN SFU',
+              isDark,
+              isMobile: false,
+              width: 180,
+              isActive: step === 3,
+              isScaleNode: true,
+            },
+          });
+        }
+
+        return baseNodes;
       }
-
-      return baseNodes;
     }
-  }, [isCodeSkill, isDark, step, isScaled, antiCheatAlert]);
+  }, [isCodeSkill, isDark, isMobile, step, isScaled, antiCheatAlert]);
 
   const edges: Edge[] = useMemo(() => {
     const activeColor = '#254be8';
@@ -525,11 +768,10 @@ function FlowCanvas({
   // Initial and reactive fitView to ensure clean positioning
   useEffect(() => {
     const timer = setTimeout(() => {
-      fitView({ padding: 0.16, duration: 400 });
-      onFitComplete?.();
-    }, 60);
+      fitView({ padding: isMobile ? 0.12 : 0.16, duration: 350 });
+    }, 70);
     return () => clearTimeout(timer);
-  }, [fitView, isCodeSkill, isScaled, onFitComplete]);
+  }, [fitView, isCodeSkill, isScaled, isMobile]);
 
   return (
     <ReactFlow
@@ -537,13 +779,13 @@ function FlowCanvas({
       edges={edges}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.16 }}
-      minZoom={0.45}
-      maxZoom={1.2}
+      fitViewOptions={{ padding: isMobile ? 0.12 : 0.16 }}
+      minZoom={0.35}
+      maxZoom={1.3}
       colorMode={isDark ? 'dark' : 'light'}
       proOptions={{ hideAttribution: true }}
     >
-      <Background color={isDark ? '#233245' : '#cbd5e1'} gap={24} size={1.2} />
+      <Background color={isDark ? '#233245' : '#cbd5e1'} gap={20} size={1.2} />
       <Controls showInteractive={false} />
     </ReactFlow>
   );
@@ -554,6 +796,7 @@ export default function Sandbox({ project }: SandboxProps) {
 
   // Dynamic theme detection for dark mode support
   const [isDark, setIsDark] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
     const updateTheme = () => {
@@ -565,7 +808,17 @@ export default function Sandbox({ project }: SandboxProps) {
       attributes: true,
       attributeFilter: ['data-theme'],
     });
-    return () => observer.disconnect();
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // State management
@@ -655,10 +908,10 @@ export default function Sandbox({ project }: SandboxProps) {
             vk<span>.</span>
           </span>
           <span className="live-badge">
-            <span className="live-dot" /> LIVE ARCHITECTURE SIMULATOR
+            <span className="live-dot" /> LIVE SIMULATOR
           </span>
           <span className="toolbar-counter">
-            {completedCount} {isCodeSkill ? 'Submissions Judged' : 'Broadcasts Synced'}
+            {completedCount} {isCodeSkill ? 'Judged' : 'Synced'}
           </span>
         </div>
 
@@ -690,11 +943,11 @@ export default function Sandbox({ project }: SandboxProps) {
           >
             {step >= 0 ? (
               <>
-                <RefreshCw size={13} className="spin" /> Executing {isCodeSkill ? `${activeLang} submission` : 'sync payload'}…
+                <RefreshCw size={13} className="spin" /> Executing…
               </>
             ) : (
               <>
-                <Play size={13} /> {isCodeSkill ? `Submit ${activeLang} Solution` : 'Broadcast Live Frame'}
+                <Play size={13} /> {isCodeSkill ? `Submit ${activeLang}` : 'Broadcast'}
               </>
             )}
           </button>
@@ -705,7 +958,7 @@ export default function Sandbox({ project }: SandboxProps) {
               className={`action-btn ${antiCheatAlert ? 'alert-active' : 'secondary'}`}
               onClick={handleAntiCheatTest}
             >
-              <ShieldAlert size={13} /> {antiCheatAlert ? 'Violation Flagged!' : 'Test Anti-Cheat Signal'}
+              <ShieldAlert size={13} /> {antiCheatAlert ? 'Violation!' : 'Anti-Cheat'}
             </button>
           ) : (
             <button
@@ -718,7 +971,7 @@ export default function Sandbox({ project }: SandboxProps) {
                 ]);
               }}
             >
-              <Zap size={13} /> Simulate Reconnection
+              <Zap size={13} /> Reconnection
             </button>
           )}
 
@@ -727,17 +980,18 @@ export default function Sandbox({ project }: SandboxProps) {
             className={`action-btn ${isScaled ? 'scaled-active' : 'secondary'}`}
             onClick={handleScaleToggle}
           >
-            <Cpu size={13} /> {isScaled ? 'Scale Down Workers' : 'Simulate 1,000+ Spike'}
+            <Cpu size={13} /> {isScaled ? 'Scale Down' : '1,000+ Spike'}
           </button>
         </div>
       </div>
 
       {/* Visual React Flow Canvas Wrapped in Provider */}
-      <div className="flow-canvas-container">
+      <div className="flow-canvas-container" style={{ height: isMobile ? 520 : 420 }}>
         <ReactFlowProvider>
           <FlowCanvas
             isCodeSkill={isCodeSkill}
             isDark={isDark}
+            isMobile={isMobile}
             step={step}
             isScaled={isScaled}
             antiCheatAlert={antiCheatAlert}
@@ -746,10 +1000,10 @@ export default function Sandbox({ project }: SandboxProps) {
 
         {antiCheatAlert && (
           <div className="anti-cheat-overlay">
-            <ShieldAlert size={20} />
+            <ShieldAlert size={18} />
             <div>
               <strong>ANTI-CHEAT SIGNAL DETECTED</strong>
-              <p>Tab Blur + DevTools inspection audit logged. Candidate video feed flag raised.</p>
+              <p>Tab Blur + DevTools inspection audit logged. Candidate flagged.</p>
             </div>
           </div>
         )}
@@ -758,12 +1012,12 @@ export default function Sandbox({ project }: SandboxProps) {
       {/* Live Telemetry / Audit Log */}
       <div className="telemetry-bar">
         <div className="telemetry-header">
-          <span className="mono">SYSTEM PIPELINE AUDIT LOG</span>
+          <span className="mono">PIPELINE AUDIT LOG</span>
           <span className="status-label">
             {step < 0 ? (
-              <span className="text-ready">● SYSTEM READY FOR EVENT</span>
+              <span className="text-ready">● READY</span>
             ) : (
-              <span className="text-active">● PIPELINE STAGE {step + 1} OF 5 RUNNING</span>
+              <span className="text-active">● STAGE {step + 1}/5 RUNNING</span>
             )}
           </span>
         </div>
@@ -779,7 +1033,7 @@ export default function Sandbox({ project }: SandboxProps) {
           ) : (
             <div className="log-entry empty">
               <span className="log-text">
-                Press &quot;Submit {isCodeSkill ? `${activeLang} Solution` : 'Broadcast Live Frame'}&quot; to trace data flow through {isCodeSkill ? 'NestJS, BullMQ, Docker sandboxes, and 128 database shards' : 'Express, Socket.IO, Redis pub/sub, and WebRTC'}.
+                Press &quot;Submit {isCodeSkill ? `${activeLang}` : 'Broadcast'}&quot; to trace live data flow through {isCodeSkill ? 'NestJS, BullMQ, Docker sandboxes, and 128 database shards' : 'Express, Socket.IO, Redis pub/sub, and WebRTC'}.
               </span>
             </div>
           )}

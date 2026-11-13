@@ -498,7 +498,7 @@ export default function Home() {
           whileDrag={{ scale: 1.06, rotate: 0, zIndex: 35 }}
           className="sticky sticky-secondary"
           initial={{ rotate: 4 }}
-          style={{ right: '16%', bottom: '40px', background: '#e0f2fe', color: '#0369a1' }}
+          style={{ background: '#e0f2fe', color: '#0369a1' }}
           onPointerDown={() => click()}
         >
           <span className="tape" style={{ background: 'rgba(255,255,255,0.7)' }} />
