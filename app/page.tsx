@@ -295,10 +295,36 @@ export default function Home() {
     };
   }, []);
 
-  // Sync theme
+  // Initialize theme from localStorage or OS preference
   useEffect(() => {
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    worldState.theme = dark ? 'dark' : 'light';
+    try {
+      const stored = localStorage.getItem('vk_theme');
+      if (stored === 'dark' || stored === 'light') {
+        const isDark = stored === 'dark';
+        setDark(isDark);
+        document.documentElement.dataset.theme = stored;
+        worldState.theme = stored;
+        return;
+      }
+      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setDark(isSystemDark);
+      document.documentElement.dataset.theme = isSystemDark ? 'dark' : 'light';
+      worldState.theme = isSystemDark ? 'dark' : 'light';
+    } catch {
+      // Fallback in private browsing
+    }
+  }, []);
+
+  // Sync theme changes to DOM, 3D world state, and localStorage
+  useEffect(() => {
+    const themeName = dark ? 'dark' : 'light';
+    document.documentElement.dataset.theme = themeName;
+    worldState.theme = themeName;
+    try {
+      localStorage.setItem('vk_theme', themeName);
+    } catch {
+      // Ignore in private browsing
+    }
   }, [dark]);
 
   // Handle modal escape & body lock
@@ -357,6 +383,18 @@ export default function Home() {
           <a href="#toolkit">Toolkit</a>
         </nav>
         <div className="header-actions">
+          <button
+            type="button"
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={() => {
+              setDark(!dark);
+              click();
+            }}
+            className="theme-toggle-header"
+            title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {dark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
           <button
             type="button"
             aria-label="Open command palette (Command + K)"
@@ -1040,6 +1078,7 @@ export default function Home() {
         <Command.List>
           <Command.Empty>No matches found.</Command.Empty>
           {[
+            [dark ? 'Switch to Light Mode ☀️' : 'Switch to Dark Mode 🌙', () => { setPalette(false); setDark(!dark); click(); }],
             ['CodeSkill (1,000+ Concurrent Sandbox)', () => { setPalette(false); setProjectModal(0); }],
             ['SyncDeck (Real-time Virtual Classroom)', () => { setPalette(false); setProjectModal(1); }],
             ['Explainer Lab: 128-Shard Partitioning', () => { setPalette(false); setLabModal(0); }],

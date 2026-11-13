@@ -22,6 +22,26 @@ interface SandboxProps {
 export default function Sandbox({ project }: SandboxProps) {
   const isCodeSkill = project === 'CodeSkill';
 
+  // Dynamic theme detection for dark mode support
+  const [isDark, setIsDark] = useState<boolean>(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.dataset.theme === 'dark');
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const nodeBg = isDark ? '#1e293b' : '#ffffff';
+  const nodeText = isDark ? '#f8fafc' : '#0f172a';
+  const nodeBorder = isDark ? '#475569' : '#94a3b8';
+
   // State management
   const [step, setStep] = useState<number>(-1);
   const [completedCount, setCompletedCount] = useState<number>(0);
@@ -38,7 +58,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'client',
           position: { x: 20, y: 110 },
           data: { label: '01 · Next.js 16 WebApp\n(Candidate IDE + Anti-Cheat)' },
-          style: { background: '#ffffff', border: '2px solid #254be8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 175 },
+          style: { background: nodeBg, border: '2px solid #254be8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -46,7 +66,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'gateway',
           position: { x: 240, y: 110 },
           data: { label: '02 · NestJS Gateway\n(Socket.IO + Auth Guards)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 175 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -54,7 +74,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'queue',
           position: { x: 460, y: 30 },
           data: { label: '03 · BullMQ on Redis\n(Async Job Queue)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 175 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -62,7 +82,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'sandbox',
           position: { x: 460, y: 190 },
           data: { label: '04 · Docker Sandboxes\n(Isolated Piston Runner)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 175 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -70,7 +90,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'shards',
           position: { x: 690, y: 110 },
           data: { label: '05 · PostgreSQL 128 Shards\n(Hash Partition Buckets)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 185 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 185 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -82,7 +102,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'host',
           position: { x: 20, y: 110 },
           data: { label: '01 · Instructor Host\n(React 19 + Whiteboard)' },
-          style: { background: '#ffffff', border: '2px solid #254be8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 175 },
+          style: { background: nodeBg, border: '2px solid #254be8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -90,7 +110,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'gateway',
           position: { x: 240, y: 110 },
           data: { label: '02 · Express + Socket.IO\n(Distributed State Sync)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 175 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 175 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -98,7 +118,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'redis',
           position: { x: 460, y: 30 },
           data: { label: '03 · Redis Pub/Sub Cluster\n(Replay Log & Delta Buffer)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 180 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 180 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -106,7 +126,7 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'webrtc',
           position: { x: 460, y: 190 },
           data: { label: '04 · WebRTC Screen Mesh\n(Low-latency Media Pipeline)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 180 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 180 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
@@ -114,13 +134,13 @@ export default function Sandbox({ project }: SandboxProps) {
           id: 'students',
           position: { x: 690, y: 110 },
           data: { label: '05 · Student Cohorts\n(3,000+ Synchronized Peers)' },
-          style: { background: '#ffffff', border: '2px solid #94a3b8', borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: '#0f172a', width: 185 },
+          style: { background: nodeBg, border: `2px solid ${nodeBorder}`, borderRadius: '8px', padding: '10px', fontSize: '11px', fontWeight: 600, color: nodeText, width: 185 },
           sourcePosition: Position.Right,
           targetPosition: Position.Left,
         },
       ];
     }
-  }, [isCodeSkill]);
+  }, [isCodeSkill, nodeBg, nodeText, nodeBorder]);
 
   const initialEdges: Edge[] = useMemo(() => {
     const edgeColor = '#254be8';
@@ -358,9 +378,10 @@ export default function Sandbox({ project }: SandboxProps) {
           fitView
           minZoom={0.4}
           maxZoom={1.2}
+          colorMode={isDark ? 'dark' : 'light'}
           proOptions={{ hideAttribution: true }}
         >
-          <Background color="#cbd5e1" gap={24} size={1.2} />
+          <Background color={isDark ? '#334155' : '#cbd5e1'} gap={24} size={1.2} />
           <Controls showInteractive={false} />
         </ReactFlow>
 
