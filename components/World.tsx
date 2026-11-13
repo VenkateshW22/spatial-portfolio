@@ -2,288 +2,412 @@
 
 import { Suspense, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { RoundedBox, Line, Float } from '@react-three/drei';
-import { Physics, RigidBody, RapierRigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
+import { RoundedBox, Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { worldState } from './world-state';
 
-// 3D Interactive Lanyard Badge (Vercel / Arthur Engel style)
-function Badge() {
-  const fixed = useRef<RapierRigidBody>(null!);
-  const link = useRef<RapierRigidBody>(null!);
-  const badge = useRef<RapierRigidBody>(null!);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const strap = useRef<any>(null);
+// Helper to draw a sleek procedural texture for a cube face
+function createFaceTexture({
+  title,
+  sub,
+  metric,
+  badge,
+  badgeColor,
+  bullets,
+  cornerTag,
+  theme = 'light',
+}: {
+  title: string;
+  sub: string;
+  metric: string;
+  badge: string;
+  badgeColor: string;
+  bullets: string[];
+  cornerTag: string;
+  theme?: 'light' | 'dark';
+}) {
+  const c = document.createElement('canvas');
+  c.width = 768;
+  c.height = 768;
+  const ctx = c.getContext('2d')!;
 
-  useRopeJoint(fixed, link, [[0, 0, 0], [0, 0, 0], 1.35]);
-  useSphericalJoint(link, badge, [[0, 0, 0], [0, 1.35, 0]]);
+  const isDark = theme === 'dark';
 
-  // Procedural Canvas Texture
-  const texture = useMemo(() => {
-    const c = document.createElement('canvas');
-    c.width = 768;
-    c.height = 1024;
-    const t = c.getContext('2d')!;
+  // Base background fill
+  ctx.fillStyle = isDark ? '#0b1015' : '#ffffff';
+  ctx.fillRect(0, 0, 768, 768);
 
-    // Background card (tactile off-white)
-    t.fillStyle = '#f8faf6';
-    t.fillRect(0, 0, 768, 1024);
+  // Subtle interior grid pattern
+  ctx.strokeStyle = isDark ? '#1a2332' : '#f1f5f9';
+  ctx.lineWidth = 1.5;
+  for (let i = 48; i < 768; i += 48) {
+    ctx.beginPath();
+    ctx.moveTo(i, 40);
+    ctx.lineTo(i, 728);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(40, i);
+    ctx.lineTo(728, i);
+    ctx.stroke();
+  }
 
-    // Header bar (Engineering Blue)
-    t.fillStyle = '#1d4ed8';
-    t.fillRect(0, 0, 768, 160);
+  // Inner card boundary border
+  ctx.strokeStyle = isDark ? '#2a3b4f' : '#e2e8f0';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(36, 36, 696, 696);
 
-    t.fillStyle = '#ffffff';
-    t.font = 'bold 30px "Courier New", monospace';
-    t.fillText('VENKATESH K  //  SYSTEMS & TRAINING', 45, 95);
+  // Top Accent Header Strip
+  ctx.fillStyle = badgeColor;
+  ctx.fillRect(36, 36, 696, 16);
 
-    // Holographic card area
-    t.fillStyle = '#e2e8f0';
-    t.fillRect(45, 195, 678, 430);
+  // Top Tag & Corner Step
+  ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+  ctx.font = 'bold 22px monospace';
+  ctx.fillText(badge, 64, 96);
 
-    // Circuit grid pattern
-    t.strokeStyle = '#cbd5e1';
-    t.lineWidth = 1.5;
-    for (let i = 0; i < 15; i++) {
-      t.beginPath();
-      t.moveTo(45, 195 + i * 30);
-      t.lineTo(723, 195 + i * 30);
-      t.stroke();
-      t.beginPath();
-      t.moveTo(45 + i * 48, 195);
-      t.lineTo(45 + i * 48, 625);
-      t.stroke();
-    }
+  ctx.fillStyle = badgeColor;
+  ctx.font = 'bold 24px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(cornerTag, 704, 96);
+  ctx.textAlign = 'left';
 
-    // Monogram Avatar
-    t.fillStyle = '#1d4ed8';
-    t.font = 'bold 220px -apple-system, sans-serif';
-    t.fillText('VK', 220, 485);
+  // Big Bold Milestone Title
+  ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+  ctx.font = '900 68px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText(title, 64, 184);
 
-    // Pill badge inside card
-    t.fillStyle = '#22c55e';
-    t.beginPath();
-    t.arc(80, 565, 10, 0, Math.PI * 2);
-    t.fill();
-    t.fillStyle = '#0f172a';
-    t.font = 'bold 22px monospace';
-    t.fillText('ORACLE ALUM · CHANDIGARH UNIV', 105, 572);
+  // Subtitle / Organization Role
+  ctx.fillStyle = badgeColor;
+  ctx.font = 'bold 28px monospace';
+  ctx.fillText(sub, 64, 230);
 
-    // Name & Title
-    t.fillStyle = '#0f172a';
-    t.font = 'bold 64px -apple-system, sans-serif';
-    t.fillText('Venkatesh K', 45, 715);
+  // Big Metric Highlight Box
+  ctx.fillStyle = isDark ? '#131c26' : '#f8fafc';
+  ctx.fillRect(64, 260, 640, 104);
+  ctx.strokeStyle = isDark ? '#233245' : '#e2e8f0';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(64, 260, 640, 104);
 
-    t.fillStyle = '#475569';
-    t.font = 'bold 24px monospace';
-    t.fillText('TECHNICAL TRAINER · SOFTWARE ENGINEER', 45, 765);
+  // Metric Accent Left Border
+  ctx.fillStyle = badgeColor;
+  ctx.fillRect(64, 260, 8, 104);
 
-    // Status pill
-    t.fillStyle = '#1d4ed8';
-    t.beginPath();
-    t.arc(63, 830, 8, 0, Math.PI * 2);
-    t.fill();
-    t.fillStyle = '#0f172a';
-    t.font = 'bold 22px monospace';
-    t.fillText('450+ HRS TAUGHT · 4K+ STUDENTS', 85, 838);
+  ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+  ctx.font = 'bold 22px monospace';
+  ctx.fillText('KEY IMPACT METRIC', 92, 298);
 
-    // Barcode
-    for (let i = 0; i < 78; i++) {
-      t.fillStyle = '#0f172a';
-      t.fillRect(45 + i * 6.5, 895, 2 + (i % 4 === 0 ? 3 : i % 3 === 0 ? 2 : 1), 50);
-    }
-    t.font = 'bold 20px monospace';
-    t.fillStyle = '#64748b';
-    t.fillText('PASSPORT / VK-2026', 450, 928);
+  ctx.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
+  ctx.font = '900 36px monospace';
+  ctx.fillText(metric, 92, 342);
 
-    return new THREE.CanvasTexture(c);
-  }, []);
+  // Key Technical Achievements (Bullets)
+  let y = 412;
+  bullets.forEach((b) => {
+    // Bullet marker
+    ctx.fillStyle = badgeColor;
+    ctx.beginPath();
+    ctx.arc(80, y - 8, 6, 0, Math.PI * 2);
+    ctx.fill();
 
-  useFrame((_, dt) => {
-    if (!badge.current || !link.current) return;
-
-    // Interactive grab and throw with momentum
-    if (worldState.dragging) {
-      badge.current.applyImpulse(
-        {
-          x: (worldState.x * 28 + worldState.vx * 15) * dt,
-          y: (worldState.y * 24 + worldState.vy * 12) * dt,
-          z: 0,
-        },
-        true
-      );
-    }
-
-    // Update dynamic rope strap coordinates
-    const a = fixed.current.translation();
-    const b = link.current.translation();
-    const d = badge.current.translation();
-    const pts = [
-      new THREE.Vector3(a.x, a.y, a.z),
-      new THREE.Vector3(b.x, b.y, b.z),
-      new THREE.Vector3(d.x, d.y + 1.35, d.z),
-    ];
-    if (strap.current) {
-      strap.current.geometry.setPositions(pts.flatMap((p) => [p.x, p.y, p.z]));
-    }
+    ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+    ctx.font = 'bold 26px -apple-system, sans-serif';
+    ctx.fillText(b, 106, y);
+    y += 58;
   });
 
-  return (
-    <>
-      <RigidBody ref={fixed} type="fixed" position={[0, 3.9, 0]} />
-      <RigidBody ref={link} position={[0, 2.6, 0]} colliders={false} />
-      <RigidBody
-        ref={badge}
-        position={[0.2, 1.2, 0]}
-        colliders="cuboid"
-        linearDamping={3}
-        angularDamping={4}
-        rotation={[0, -0.12, -0.1]}
-      >
-        {/* Badge casing */}
-        <RoundedBox args={[2, 2.7, 0.12]} radius={0.12} smoothness={4}>
-          <meshStandardMaterial color="#e8ece6" roughness={0.3} metalness={0.2} />
-        </RoundedBox>
+  // Bottom Technical Barcode & Hash
+  ctx.strokeStyle = isDark ? '#1e293b' : '#cbd5e1';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(64, 660);
+  ctx.lineTo(704, 660);
+  ctx.stroke();
 
-        {/* Badge card face with dynamic canvas texture */}
-        <mesh position={[0, 0, 0.067]}>
-          <planeGeometry args={[1.91, 2.55]} />
-          <meshStandardMaterial map={texture} roughness={0.7} />
-        </mesh>
+  // Procedural barcode bars
+  for (let i = 0; i < 48; i++) {
+    ctx.fillStyle = isDark ? '#475569' : '#94a3b8';
+    ctx.fillRect(64 + i * 8, 678, (i % 3 === 0 ? 3 : 1.5), 32);
+  }
 
-        {/* Metallic Lanyard Clamp Ring */}
-        <mesh position={[0, 1.4, 0]}>
-          <torusGeometry args={[0.15, 0.045, 12, 24]} />
-          <meshStandardMaterial color="#94a3b8" metalness={0.9} roughness={0.15} />
-        </mesh>
-      </RigidBody>
+  ctx.font = 'bold 20px monospace';
+  ctx.fillStyle = isDark ? '#64748b' : '#94a3b8';
+  ctx.textAlign = 'right';
+  ctx.fillText('CRC32 · VERIFIED_MILESTONE', 704, 700);
+  ctx.textAlign = 'left';
 
-      {/* Lanyard Fabric Strap */}
-      <Line
-        ref={strap}
-        points={[
-          [0, 3.9, 0],
-          [0, 2.6, 0],
-          [0.2, 2.5, 0],
-        ]}
-        color="#254be8"
-        lineWidth={12}
-      />
-    </>
-  );
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = 8;
+  return tex;
 }
 
-// Floating Spatial Nodes in Background (Arthur Engel / Linear depth)
-function SpatialBackgroundNodes() {
+// The 3D Kinetic Milestone Cube
+function MilestoneCube() {
   const group = useRef<THREE.Group>(null!);
 
-  const nodes = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < 24; i++) {
-      arr.push({
-        position: [
-          (Math.random() - 0.5) * 14,
-          (Math.random() - 0.5) * 12 - 2,
-          (Math.random() - 0.5) * 8 - 4,
-        ] as [number, number, number],
-        scale: 0.15 + Math.random() * 0.25,
-        speed: 0.5 + Math.random() * 1.5,
-      });
-    }
-    return arr;
-  }, []);
+  // Kinetic rotational physics tracking
+  const currentRot = useRef({ x: 0.35, y: 0.55 });
+  const targetRot = useRef({ x: 0.35, y: 0.55 });
+  const angularVel = useRef({ x: 0.04, y: 0.35 }); // Idle spin speed
 
+  const theme = worldState.theme || 'light';
+
+  // Generate 6 high-definition procedural textures for all 6 cube faces
+  const textures = useMemo(() => {
+    // Face 1: Front (+Z) -> Oracle Enterprise Systems
+    const front = createFaceTexture({
+      title: 'ORACLE',
+      sub: 'SOFTWARE ENGINEER · 2022—2024',
+      metric: '20% RDS COST REDUCTION',
+      badge: 'ENTERPRISE MICROSERVICES',
+      badgeColor: '#254be8',
+      bullets: [
+        'High-Throughput Microservices (10k+ QPS)',
+        'AWS Aurora PostgreSQL Migration Lead',
+        'Resilience4j Circuit Breakers',
+        'Oracle Rockstar Engineering Award',
+      ],
+      cornerTag: '01 / CLOUD',
+      theme,
+    });
+
+    // Face 2: Right (+X) -> Chandigarh University & EdTech
+    const right = createFaceTexture({
+      title: '4,000+ TAUGHT',
+      sub: 'TECHNICAL TRAINER · 2025—PRES',
+      metric: '450+ TRAINING HOURS DELIVERED',
+      badge: 'CHANDIGARH UNIVERSITY FACULTY',
+      badgeColor: '#10b981',
+      bullets: [
+        'Teaching Titan Award (CU Faculty)',
+        'Competitive Coding & DSA Architectures',
+        'Bootcamp Tours: NIET, Chitkara, LPU',
+        'Engineers Placed in Tier-1 Product Roles',
+      ],
+      cornerTag: '02 / EDTECH',
+      theme,
+    });
+
+    // Face 3: Back (-Z) -> CodeSkill Distributed Sandbox
+    const back = createFaceTexture({
+      title: 'CODESKILL',
+      sub: 'PRODUCTION DISTRIBUTED JUDGE',
+      metric: '1,000+ CONCURRENT CONTESTANTS',
+      badge: '128-BUCKET SHARDED RUNNER',
+      badgeColor: '#3b82f6',
+      bullets: [
+        'PostgreSQL 128 Hash Shards (CRC32)',
+        'Docker & Piston Sandboxed Runtimes',
+        'BullMQ Async Task Queue on Redis',
+        'Multi-Signal Anti-Cheat Integrity',
+      ],
+      cornerTag: '03 / SCALE',
+      theme,
+    });
+
+    // Face 4: Left (-X) -> SyncDeck Realtime Classroom
+    const left = createFaceTexture({
+      title: 'SYNCDECK',
+      sub: 'COLLABORATIVE CLASSROOM PLATFORM',
+      metric: '<45ms ULTRA-LOW LATENCY',
+      badge: 'WEBRTC MESH + REDIS PUB/SUB',
+      badgeColor: '#8b5cf6',
+      bullets: [
+        'Low-Latency WebRTC P2P Screen Mesh',
+        'Redis Pub/Sub State Fanout & Delta Buffer',
+        'Zero-Loss Frame Reconnection Replay',
+        'Multi-User Interactive Whiteboard',
+      ],
+      cornerTag: '04 / REALTIME',
+      theme,
+    });
+
+    // Face 5: Top (+Y) -> Academic Scholar & Foundations
+    const top = createFaceTexture({
+      title: 'AMRITA UNIV',
+      sub: 'MCA & BCA DISTINCTION · 2017—22',
+      metric: '5 YEARS CORE SYSTEMS RESEARCH',
+      badge: 'COMPUTER SCIENCE SCHOLAR',
+      badgeColor: '#0284c7',
+      bullets: [
+        'Algorithms & Distributed Systems Engines',
+        'Assistive Eye-Movement Research Lead',
+        'C/C++, Java & Linux OS Internals',
+        'Polyglot Fluency: 6 Indian Languages',
+      ],
+      cornerTag: '05 / ACADEMIC',
+      theme,
+    });
+
+    // Face 6: Bottom (-Y) -> Venkatesh K Signature
+    const bottom = createFaceTexture({
+      title: 'VENKATESH K',
+      sub: 'ENGINEER & TECHNICAL EDUCATOR',
+      metric: 'HIGH CONCURRENCY + EDUCATION',
+      badge: 'CRAFT & HUMAN IMPACT',
+      badgeColor: '#f59e0b',
+      bullets: [
+        '"Build things. Teach things. Stay curious."',
+        'Open to Relocation & Senior Product Roles',
+        'Mysuru → Bengaluru → NCR → Punjab',
+        'venkateshwork2212@gmail.com',
+      ],
+      cornerTag: '06 / PROFILE',
+      theme,
+    });
+
+    return { front, right, back, left, top, bottom };
+  }, [theme]);
+
+  // Frame tick animation & kinetic rotation handling
   useFrame((_, dt) => {
     if (!group.current) return;
-    // Rotate subtly and respond to scroll progress
-    group.current.rotation.y += dt * 0.05;
-    group.current.position.y = THREE.MathUtils.damp(
-      group.current.position.y,
-      -worldState.progress * 4,
-      3,
-      dt
-    );
+
+    if (worldState.dragging) {
+      // User is actively grabbing & dragging the cube
+      const dragSpeedX = worldState.vx * 6.0;
+      const dragSpeedY = worldState.vy * 6.0;
+      angularVel.current.x = -dragSpeedY;
+      angularVel.current.y = dragSpeedX;
+      targetRot.current.x += angularVel.current.x * dt;
+      targetRot.current.y += angularVel.current.y * dt;
+    } else {
+      // Free-spinning flick momentum with realistic damping
+      angularVel.current.x *= Math.pow(0.92, dt * 60);
+      angularVel.current.y *= Math.pow(0.92, dt * 60);
+
+      // Once inertia slows, seamlessly resume gentle idle spin
+      const currentSpeed = Math.hypot(angularVel.current.x, angularVel.current.y);
+      if (currentSpeed < 0.25) {
+        angularVel.current.y = THREE.MathUtils.damp(angularVel.current.y, 0.35, 1.8, dt);
+        angularVel.current.x = THREE.MathUtils.damp(angularVel.current.x, 0.04, 1.8, dt);
+      }
+
+      targetRot.current.x += angularVel.current.x * dt;
+      targetRot.current.y += angularVel.current.y * dt;
+    }
+
+    // Smooth interpolation to target rotation
+    currentRot.current.x = THREE.MathUtils.damp(currentRot.current.x, targetRot.current.x, 14, dt);
+    currentRot.current.y = THREE.MathUtils.damp(currentRot.current.y, targetRot.current.y, 14, dt);
+
+    // Subtle parallax tilt from cursor position
+    const parallaxX = (worldState.x || 0) * 0.22;
+    const parallaxY = (worldState.y || 0) * 0.18;
+
+    group.current.rotation.x = currentRot.current.x + parallaxY;
+    group.current.rotation.y = currentRot.current.y + parallaxX;
+
+    // Scroll reaction: cube translates downward & scales down as visitor scrolls
+    const scrollSink = -worldState.progress * 8.0 + 0.1;
+    group.current.position.y = THREE.MathUtils.damp(group.current.position.y, scrollSink, 4, dt);
+
+    // Responsive position: centered on right side
+    group.current.position.x = 2.1;
+    group.current.position.z = 0;
+
+    const targetScale = Math.max(0.35, 1 - worldState.progress * 0.55);
+    group.current.scale.setScalar(THREE.MathUtils.damp(group.current.scale.x, targetScale, 4, dt));
   });
+
+  const casingColor = theme === 'dark' ? '#161e27' : '#334155';
+  const half = 1.255;
 
   return (
     <group ref={group}>
-      {nodes.map((n, i) => (
-        <Float key={i} speed={n.speed} rotationIntensity={1} floatIntensity={1.5}>
-          <mesh position={n.position} scale={n.scale}>
-            <octahedronGeometry args={[1, 0]} />
-            <meshStandardMaterial
-              color={i % 3 === 0 ? '#254be8' : i % 2 === 0 ? '#38bdf8' : '#94a3b8'}
-              wireframe
-              transparent
-              opacity={0.35}
-            />
-          </mesh>
-        </Float>
-      ))}
+      {/* Heavy Beveled Metallic Casing */}
+      <RoundedBox args={[2.5, 2.5, 2.5]} radius={0.14} smoothness={5}>
+        <meshStandardMaterial
+          color={casingColor}
+          roughness={0.25}
+          metalness={0.75}
+        />
+      </RoundedBox>
+
+      {/* Face 1: Front (+Z) · Oracle Enterprise Systems */}
+      <mesh position={[0, 0, half]}>
+        <planeGeometry args={[2.34, 2.34]} />
+        <meshStandardMaterial map={textures.front} roughness={0.65} />
+      </mesh>
+
+      {/* Face 2: Right (+X) · Chandigarh University */}
+      <mesh position={[half, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[2.34, 2.34]} />
+        <meshStandardMaterial map={textures.right} roughness={0.65} />
+      </mesh>
+
+      {/* Face 3: Back (-Z) · CodeSkill Distributed Runner */}
+      <mesh position={[0, 0, -half]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[2.34, 2.34]} />
+        <meshStandardMaterial map={textures.back} roughness={0.65} />
+      </mesh>
+
+      {/* Face 4: Left (-X) · SyncDeck Realtime Classroom */}
+      <mesh position={[-half, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <planeGeometry args={[2.34, 2.34]} />
+        <meshStandardMaterial map={textures.left} roughness={0.65} />
+      </mesh>
+
+      {/* Face 5: Top (+Y) · Academic Scholar & Research */}
+      <mesh position={[0, half, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[2.34, 2.34]} />
+        <meshStandardMaterial map={textures.top} roughness={0.65} />
+      </mesh>
+
+      {/* Face 6: Bottom (-Y) · Venkatesh K Profile & Signature */}
+      <mesh position={[0, -half, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[2.34, 2.34]} />
+        <meshStandardMaterial map={textures.bottom} roughness={0.65} />
+      </mesh>
     </group>
   );
 }
 
-// Master Scene with Spline Camera Traversal
-function Scene() {
-  const group = useRef<THREE.Group>(null!);
+// Background Floating Wireframe Geometries
+function SpatialBackgroundNodes() {
+  const mesh1 = useRef<THREE.Mesh>(null!);
+  const mesh2 = useRef<THREE.Mesh>(null!);
 
-  useFrame((state, dt) => {
-    // Damp position of hero group based on viewport width & scroll progress
-    group.current.position.x = THREE.MathUtils.damp(
-      group.current.position.x,
-      state.viewport.width * 0.28,
-      4,
-      dt
-    );
-    group.current.scale.setScalar(state.size.width < 1000 ? 0.72 : 0.9);
-
-    // Scroll progress translates the badge downward out of view as user enters deep project sections
-    group.current.position.y = THREE.MathUtils.damp(
-      group.current.position.y,
-      -worldState.progress * 7.5 - 0.55,
-      4,
-      dt
-    );
-
-    // Camera moves through 3D depth along spline driven by Lenis scroll progress
-    state.camera.position.z = THREE.MathUtils.damp(
-      state.camera.position.z,
-      8 + worldState.progress * 6,
-      4,
-      dt
-    );
-    state.camera.position.x = THREE.MathUtils.damp(
-      state.camera.position.x,
-      (worldState.x || 0) * 0.35,
-      3,
-      dt
-    );
-    state.camera.position.y = THREE.MathUtils.damp(
-      state.camera.position.y,
-      (worldState.y || 0) * 0.25,
-      3,
-      dt
-    );
+  useFrame((_, dt) => {
+    if (mesh1.current) mesh1.current.rotation.x += dt * 0.15;
+    if (mesh1.current) mesh1.current.rotation.y += dt * 0.2;
+    if (mesh2.current) mesh2.current.rotation.y -= dt * 0.18;
   });
 
   return (
     <>
-      {/* Studio Lighting */}
-      <ambientLight intensity={1.8} />
-      <directionalLight position={[4, 8, 6]} intensity={3.2} castShadow />
-      <directionalLight position={[-4, 2, -2]} intensity={1.2} color="#38bdf8" />
-      <pointLight position={[0, -2, 4]} intensity={1.5} color="#254be8" />
+      <Float speed={1.8} rotationIntensity={0.3} floatIntensity={0.5}>
+        <mesh ref={mesh1} position={[-4.5, 2.2, -4]}>
+          <octahedronGeometry args={[1.4, 0]} />
+          <meshBasicMaterial color="#3b82f6" wireframe opacity={0.25} transparent />
+        </mesh>
+      </Float>
 
-      {/* Floating Spatial Background Nodes */}
+      <Float speed={2.2} rotationIntensity={0.4} floatIntensity={0.6}>
+        <mesh ref={mesh2} position={[5.2, -2.5, -3]}>
+          <dodecahedronGeometry args={[1.2, 0]} />
+          <meshBasicMaterial color="#10b981" wireframe opacity={0.22} transparent />
+        </mesh>
+      </Float>
+    </>
+  );
+}
+
+function Scene() {
+  return (
+    <>
+      {/* Studio Lighting with Warm/Cool Split for Specular Edges */}
+      <ambientLight intensity={1.6} />
+      <directionalLight position={[6, 9, 7]} intensity={3.0} />
+      <directionalLight position={[-6, 3, -3]} intensity={1.6} color="#38bdf8" />
+      <pointLight position={[2, -1, 4]} intensity={2.2} color="#254be8" />
+
+      {/* Background Floating Spatial Nodes */}
       <SpatialBackgroundNodes />
 
-      {/* Hero Badge in Physics World */}
-      <group ref={group}>
-        <Physics gravity={[0, -12, 0]}>
-          <Badge />
-        </Physics>
-      </group>
+      {/* Kinetic 3D Milestone Cube */}
+      <Float speed={2.0} rotationIntensity={0.15} floatIntensity={0.4}>
+        <MilestoneCube />
+      </Float>
     </>
   );
 }
@@ -293,7 +417,7 @@ export default function World() {
     <div className="world" aria-hidden="true">
       <Canvas
         dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 8], fov: 40 }}
+        camera={{ position: [0, 0, 7.5], fov: 42 }}
         gl={{ alpha: true, antialias: true }}
       >
         <Suspense fallback={null}>

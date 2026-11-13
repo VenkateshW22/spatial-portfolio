@@ -446,10 +446,10 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Interactive Badge Touch/Mouse Grab Zone */}
+        {/* Interactive 3D Milestone Cube Touch/Mouse Grab Zone */}
         <div
           className="badge-zone"
-          aria-label="Interactive swinging identity badge"
+          aria-label="Interactive 3D Kinetic Milestone Cube: click, grab, and flick to spin career milestones"
           role="img"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -458,14 +458,14 @@ export default function Home() {
         >
           {(!webgl || reduce || compact) && (
             <div className="fallback-badge">
-              <div>VK. // SYSTEMS & EDUCATION</div>
-              <strong>VK</strong>
+              <div>VK. // 3D MILESTONE CUBE</div>
+              <strong>3D</strong>
               <h3>Venkatesh K</h3>
               <p>SOFTWARE ENGINEER · TECHNICAL TRAINER</p>
               <span>ORACLE ALUM · 450+ HRS TAUGHT · 4K+ STUDENTS</span>
             </div>
           )}
-          <span className="badge-hint">↖ grab & throw the 3D badge</span>
+          <span className="badge-hint">↖ grab & flick 3D cube to spin</span>
         </div>
 
         {/* Tactile Draggable Note 1 (James Chugh Style) */}
