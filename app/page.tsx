@@ -30,6 +30,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { worldState } from '../components/world-state';
+import LoadingScreen from '../components/LoadingScreen';
 
 // Dynamic imports with SSR disabled for 3D and Flow Canvas
 const World = dynamic(() => import('../components/World'), { ssr: false });
@@ -190,6 +191,7 @@ const languages = [
 ];
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
   const [palette, setPalette] = useState(false);
   const [sound, setSound] = useState(false);
   const [dark, setDark] = useState(false);
@@ -328,7 +330,17 @@ export default function Home() {
   };
 
   return (
-    <main>
+    <>
+      <AnimatePresence>
+        {loading && (
+          <LoadingScreen
+            onComplete={() => setLoading(false)}
+            reduceMotion={!!reduce}
+          />
+        )}
+      </AnimatePresence>
+
+      <main>
       {/* LAYER 1: Persistent 3D World (Fixed Fullscreen Canvas) */}
       {webgl && !reduce && !compact && <World />}
 
@@ -1142,5 +1154,6 @@ export default function Home() {
         )}
       </AnimatePresence>
     </main>
+  </>
   );
 }
