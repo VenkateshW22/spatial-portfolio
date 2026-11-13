@@ -1032,7 +1032,6 @@ export default function Home() {
           <a className="brand" href="#home">
             vk<span>.</span>
           </a>
-          <span className="mono">HYBRID SPATIAL CANVAS · BUILT WITH NEXT.JS 15 + R3F + FRAMER</span>
           <div className="footer-socials">
             <a href="https://github.com/VenkateshW22" target="_blank" rel="noreferrer">
               <Github size={15} /> GitHub
