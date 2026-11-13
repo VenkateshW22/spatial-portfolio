@@ -2333,8 +2333,11 @@ h2 span {
     linear-gradient(hsla(0, 0%, 70%, 0) 46.9%, hsl(0, 0%, 75%) 47% 52.9%, hsla(0, 0%, 75%, 0) 53%) 50% 50% / 99% 99% no-repeat;
 }
 
-/* Hamster Loader Fullscreen Container & UI */
-.hamster-loader-overlay {
+/* ==========================================================================
+   ELITE ARCHITECTURAL COCKPIT LOADER
+   ========================================================================== */
+
+.elite-loader-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -2346,186 +2349,580 @@ h2 span {
   user-select: none;
 }
 
-.hamster-loader-grid {
+[data-theme='dark'] .elite-loader-backdrop {
+  background: #090d0b;
+}
+
+.elite-loader-grid {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(var(--line) 1px, transparent 1px);
-  background-size: 24px 24px;
-  opacity: 0.75;
+  background-image: 
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.35;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
 }
 
-.hamster-loader-glow {
+.elite-loader-radial-aura {
   position: absolute;
-  width: 520px;
-  height: 520px;
+  width: 700px;
+  height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(37, 75, 232, 0.12) 0%, rgba(245, 158, 11, 0.08) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 75, 232, 0.14) 0%, rgba(245, 158, 11, 0.08) 35%, transparent 70%);
   pointer-events: none;
-  filter: blur(40px);
+  filter: blur(60px);
+  transition: all 0.5s ease;
 }
 
-[data-theme='dark'] .hamster-loader-glow {
-  background: radial-gradient(circle, rgba(79, 115, 245, 0.18) 0%, rgba(245, 158, 11, 0.12) 45%, transparent 70%);
+.elite-loader-radial-aura.turbo {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, rgba(239, 68, 68, 0.16) 40%, transparent 70%);
+  transform: scale(1.18);
 }
 
-.hamster-loader-card {
-  position: relative;
-  z-index: 10;
-  width: 92%;
-  max-width: 440px;
+[data-theme='dark'] .elite-loader-radial-aura {
+  background: radial-gradient(circle, rgba(79, 115, 245, 0.22) 0%, rgba(245, 158, 11, 0.12) 35%, transparent 70%);
+}
+
+[data-theme='dark'] .elite-loader-radial-aura.turbo {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(239, 68, 68, 0.2) 40%, transparent 70%);
+}
+
+/* Corner HUD Brackets */
+.elite-hud-bracket {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  z-index: 20;
+}
+
+.elite-hud-bracket .bracket-mark {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--blue);
+  font-weight: 300;
+}
+
+.elite-hud-bracket.top-left {
+  top: 28px;
+  left: 36px;
+}
+
+.elite-hud-bracket.top-right {
+  top: 28px;
+  right: 36px;
+}
+
+.elite-hud-bracket.bottom-left {
+  bottom: 28px;
+  left: 36px;
+}
+
+.elite-hud-bracket.bottom-right {
+  bottom: 24px;
+  right: 36px;
+}
+
+.elite-quick-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 6px;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 26px 24px 20px;
-  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-subtle);
+}
+
+.elite-quick-skip:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-1px);
+}
+
+.elite-quick-skip kbd {
+  font-family: inherit;
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+/* Main Container */
+.elite-loader-container {
+  position: relative;
+  z-index: 10;
+  width: 90%;
+  max-width: 680px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  backdrop-filter: blur(12px);
 }
 
-.hamster-loader-badge {
-  display: flex;
+.elite-turbine-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  background: var(--paper);
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: 30px;
+  background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 20px;
   font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 4px;
+  color: var(--ink);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-subtle);
 }
 
-.hamster-status-light {
+.elite-pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--accent-green);
-  box-shadow: 0 0 8px var(--accent-green);
-  animation: pulse-dot 1.8s infinite;
+  box-shadow: 0 0 10px var(--accent-green);
+  animation: pulse-dot 1.5s infinite;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+.elite-pill-divider {
+  color: var(--line);
 }
 
-.hamster-speed-pill {
+.elite-turbo-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: var(--card);
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--muted);
   border: 1px solid var(--line);
-  color: var(--ink);
-  font-weight: 700;
+  transition: all 0.2s;
 }
 
-.hamster-hint {
+.elite-turbo-badge.active {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #f59e0b;
+}
+
+[data-theme='dark'] .elite-turbo-badge.active {
+  background: #451a03;
+  color: #fbbf24;
+  border-color: #d97706;
+}
+
+/* Reactor Stage & Conduits */
+.elite-reactor-assembly {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.elite-conduit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.conduit-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.8px;
+}
+
+.conduit-line {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.conduit-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  animation: conduit-flow 1.4s linear infinite;
+}
+
+.conduit.left .conduit-pulse {
+  animation-direction: reverse;
+}
+
+.conduit-pulse.turbo {
+  background: linear-gradient(90deg, transparent, #f59e0b, transparent);
+  animation-duration: 0.45s;
+}
+
+@keyframes conduit-flow {
+  0% { transform: translateX(-40px); }
+  100% { transform: translateX(200px); }
+}
+
+.conduit-val {
+  font-size: 10px;
+  color: var(--blue);
+  font-weight: 800;
+}
+
+/* Hamster Wheel Stage in Cockpit */
+.elite-wheel-stage {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.elite-compass-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.elite-compass-ring.outer {
+  width: 206px;
+  height: 206px;
+  border: 1px dashed var(--line);
+  animation: rotate-dial 40s linear infinite;
+}
+
+.elite-compass-ring.inner {
+  width: 184px;
+  height: 184px;
+  border: 1px dotted var(--blue);
+  opacity: 0.45;
+  animation: rotate-dial 25s linear infinite reverse;
+}
+
+.elite-compass-ring.turbo {
+  border-color: #f59e0b;
+  animation-duration: 10s;
+}
+
+@keyframes rotate-dial {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.elite-wheel-stage .wheel-and-hamster {
+  margin: 0;
+  z-index: 5;
+}
+
+.elite-reactor-base {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reactor-base-grill {
+  width: 70%;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--muted) 0px, var(--muted) 4px, transparent 4px, transparent 8px);
+  opacity: 0.5;
+}
+
+/* 3-Column Telemetry Matrix */
+.elite-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.elite-telemetry-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  box-shadow: var(--shadow-subtle);
+  transition: all 0.2s;
+}
+
+.elite-telemetry-card.highlight {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, var(--card) 0%, rgba(245, 158, 11, 0.04) 100%);
+}
+
+.telemetry-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 9.5px;
   color: var(--muted);
-  margin-bottom: 16px;
-  transition: color 0.2s;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
 
-.hamster-hint svg {
-  color: #f59e0b;
+.telemetry-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
 }
 
-.hamster-progress-wrapper {
+.telemetry-unit {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* Progress Engine */
+.elite-progress-section {
   width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 18px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.elite-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 12px;
 }
 
-.hamster-progress-meta {
+.elite-status-ticker {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 6px;
-  font-size: 11px;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  margin-right: 16px;
 }
 
-.hamster-pct {
+.ticker-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+.ticker-text {
+  font-size: 11px;
+  color: var(--ink);
+}
+
+.ticker-tag {
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.elite-large-counter {
+  display: flex;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+
+.counter-number {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -1px;
+}
+
+.counter-pct {
   font-size: 14px;
   font-weight: 800;
   color: var(--blue);
+  margin-left: 2px;
 }
 
-.hamster-status {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.hamster-progress-track {
+.elite-progress-track {
   width: 100%;
-  height: 7px;
-  background: var(--line);
+  height: 8px;
+  background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 
-.hamster-progress-fill {
+.elite-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--blue) 0%, #f59e0b 100%);
-  border-radius: 4px;
+  background: linear-gradient(90deg, var(--blue) 0%, #3b82f6 70%, #f59e0b 100%);
+  border-radius: 3px;
   transition: width 0.08s ease-out;
-  box-shadow: 0 0 10px rgba(37, 75, 232, 0.4);
+  box-shadow: 0 0 12px rgba(37, 75, 232, 0.5);
 }
 
-.hamster-telemetry {
+.elite-progress-fill.turbo {
+  background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+}
+
+/* Multi-Row Boot Terminal Console */
+.elite-terminal-console {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.terminal-topbar {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font-size: 11px;
-  color: var(--ink);
-  margin-bottom: 14px;
-  text-align: left;
-  overflow: hidden;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 
-.hamster-skip-btn {
+.terminal-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.terminal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.terminal-bullet {
+  color: var(--accent-green);
+  font-weight: 900;
+}
+
+.terminal-time {
+  color: var(--muted);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.terminal-tag {
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--paper);
+  flex-shrink: 0;
+}
+
+.terminal-desc {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+/* Overclock Action Button */
+.elite-interaction-bar {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.elite-overclock-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 11px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
   color: var(--muted);
-  background: transparent;
-  border: 1px solid transparent;
-  padding: 4px 10px;
-  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.hamster-skip-btn:hover {
-  color: var(--ink);
-  background: var(--paper);
-  border-color: var(--line);
+.elite-overclock-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-1px);
 }
 
-.hamster-kbd {
-  font-family: inherit;
-  font-size: 9px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--ink);
+.elite-overclock-btn.active {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+
+/* Responsive adjustments for Elite Loader */
+@media (max-width: 768px) {
+  .elite-hud-bracket.top-left,
+  .elite-hud-bracket.top-right {
+    display: none;
+  }
+  .elite-hud-bracket.bottom-left {
+    display: none;
+  }
+  .elite-conduit {
+    display: none;
+  }
+  .elite-telemetry-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .elite-large-counter .counter-number {
+    font-size: 26px;
+  }
+  .elite-status-ticker {
+    margin-right: 8px;
+  }
 }
 
 /* Animations for Hamster Anatomy */
